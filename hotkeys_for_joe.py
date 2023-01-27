@@ -33,15 +33,12 @@ def check_user():
         exit()
     input_user, input_password = r.split(' ')
     input_user = input_user.lower()
-    print(r)
     with open("username_password.txt", "r") as file:
         username, password = file.read().split(" ")
         username = username.lower()
-        print(username, password)
     with open("admin_username_password.txt") as file:
         admin_username, admin_password = file.read().split(" ")
         admin_username = admin_username.lower()
-        print(admin_username, admin_password)
     if admin_username == input_user and admin_password == input_password:
         admin = True
         return
