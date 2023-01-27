@@ -107,7 +107,11 @@ def admin_commands(input_function):
                 if admin:
                     input_function()
                 if not admin:
-                    return
+                    r = buttons("Incorrect Admin Username or Password. \n \n Try again?", button_options=["Yes", "No"])
+                    if r == "Yes":
+                        admin_commands(input_function)
+                    if r == "No":
+                        return
             if r == "No":
                 return
 
