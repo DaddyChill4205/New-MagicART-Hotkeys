@@ -1,0 +1,19 @@
+from time import sleep, time
+from os import chdir, startfile, system
+from webbrowser import open as webopen
+from tendo import singleton
+from tendo.singleton import SingleInstance
+from global_hotkeys import register_hotkeys, start_checking_hotkeys
+from bot import click_if_exists, search_and_click, found, find, bclick
+from pyautogui import hotkey, alert, confirm, moveTo, click
+from pyperclip import copy
+from win32gui import GetForegroundWindow, ShowWindow
+from win32con import SW_MINIMIZE
+from subprocess import call
+
+
+
+'''''
+pip install pypiwin32
+pip install opencv-python
+'''''
