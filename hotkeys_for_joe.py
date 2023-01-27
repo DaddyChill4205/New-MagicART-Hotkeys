@@ -20,9 +20,6 @@ keyboard_command = True
 complete = False
 admin = False
 
-# Working Directory
-chdir(r"C:\\Users\\rcherveny\\Documents\\Code\\New-MagicART-Hotkeys")
-
 # makes sure only one instance of the program is running
 try:
     only_one = SingleInstance()
@@ -32,20 +29,26 @@ except Exception as e:
 def check_user():
     global admin
     r = double_input("Username", "Password")
-    file = open('username_password.txt', "r")
-    file2 = open('admin_username_password.txt', "r")
-    content = file.read()
-    content2 = file2.read()
-        
     if r == None:
         exit()
-    if r in content:
-        admin = False
-        return
-    if r in content2:
+    input_user, input_password = r.split(' ')
+    input_user = input_user.lower()
+    print(r)
+    with open("username_password.txt", "r") as file:
+        username, password = file.read().split(" ")
+        username = username.lower()
+        print(username, password)
+    with open("admin_username_password.txt") as file:
+        admin_username, admin_password = file.read().split(" ")
+        admin_username = admin_username.lower()
+        print(admin_username, admin_password)
+    if admin_username == input_user and admin_password == input_password:
         admin = True
         return
-    if r not in content and r not in content2:
+    elif username == input_user and password == input_password:
+        admin = False
+        return
+    else:
         r = buttons("Username or Password is incorrect. Try again?", button_options=["Yes", "No"])
         if r == "Yes":
             check_user()
@@ -53,8 +56,6 @@ def check_user():
             exit()
         if r == None:
             exit()
-
-    file.close()
 
 
 check_user()
