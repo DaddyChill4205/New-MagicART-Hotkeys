@@ -21,7 +21,7 @@ complete = False
 admin = False
 
 # Working Directory
-chdir(r"C:\\Users\\rcherveny\\Documents\\Code\\MagicART-Hotkeys")
+chdir(r"C:\\Users\\rcherveny\\Documents\\Code\\New-MagicART-Hotkeys")
 
 # makes sure only one instance of the program is running
 try:
@@ -37,14 +37,14 @@ def check_user():
     content = file.read()
     content2 = file2.read()
         
+    if r == None:
+        exit()
     if r in content:
         admin = False
         return
     if r in content2:
         admin = True
         return
-    if r == None:
-        exit()
     if r not in content and r not in content2:
         r = buttons("Username or Password is incorrect. Try again?", button_options=["Yes", "No"])
         if r == "Yes":
