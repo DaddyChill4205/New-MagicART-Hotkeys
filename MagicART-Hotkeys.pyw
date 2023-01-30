@@ -4,7 +4,7 @@ from os import chdir, startfile, system
 from webbrowser import open as webopen
 from tendo import singleton
 from tendo.singleton import SingleInstance
-from global_hotkeys import register_hotkeys, start_checking_hotkeys
+from global_hotkeys import register_hotkeys, start_checking_hotkeys, stop_checking_hotkeys
 from bot import click_if_exists, search_and_click, found, find, bclick
 from pyautogui import hotkey, moveTo, click
 from pyperclip import copy
@@ -19,6 +19,8 @@ awake = True
 keyboard_command = True
 complete = False
 admin = False
+run_bindings = True
+
 
 # makes sure only one instance of the program is running
 try:
@@ -241,7 +243,7 @@ def add_user():
         users = [r]
         file = open('username_password.txt', "a")
         for user in users:
-            file.write(user + '\n')
+            file.write('\n' + user)
         file.close()
 
 @commands_on_off
@@ -279,6 +281,12 @@ def toggle_keyboard_commands():
     elif r == 'No':
         message("Well then why did you click the button?")
 
+@commands_on_off
+def end_program():
+    r = buttons("Are you sure you want to end the program?", button_options=[
+                'Yes', 'No'])
+    if r == 'Yes':
+        call (["taskkill", "/F", "/IM", "pythonw.exe"])
 
 @commands_on_off
 def shut_down_computer():
@@ -305,6 +313,7 @@ bindings = [
     [["F6"], None, open_toolbar],
     [["F7"], None, commands_on_off(lambda: message(
         " F2: Go to 925 template \n F3: Go to 10K template \n F4: Go to 14K template \n F5: Go to Logos template \n F6: Open Toolbar \n F7: Hotkeys List \n F11: Close MagicART \n F12: Open MagicART \n Alt + `: Toggle Keyboard Commands \n Ctrl + Shift: Horizontal Allignment \n Ctrl + Alt: Center Allignment", "Hotkeys"))],
+    [["F10"], None, end_program],
     [["F11"], None, commands_on_off(lambda: call(
         ["taskkill", "/F", "/IM", "MagicART.exe"]))],
     [["F12"], None, open_MagicArt],
@@ -317,12 +326,9 @@ bindings = [
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-# Always Running
-
-register_hotkeys(bindings)
-
 start_checking_hotkeys()
 
+register_hotkeys(bindings)
 
 while awake:
     # pick a random phrase from the sleeplist to print, then sleep for 5 minutes and press f15
