@@ -101,19 +101,23 @@ def admin_commands(input_function):
         if admin:
             input_function()
         if not admin:
-            r = buttons("You must have Administrator Privileges to use this command. \n \n Sign in as Admin?.", button_options=["Yes", "No"])
+            r = buttons("You must have Administrator Privileges to use this command. \n \n Sign in as Admin?", button_options=["Yes", "No"])
             if r == "Yes":
-                check_user()
-                if admin:
+                r = double_input("Admin Username", "Admin Password")
+                if r == None:
+                    pass
+                input_user, input_password = r.split(' ')
+                input_user = input_user.lower()
+                with open("admin_username_password.txt") as file:
+                    admin_username, admin_password = file.read().split(" ")
+                    admin_username = admin_username.lower()
+                if admin_username == input_user and admin_password == input_password:
+                    admin = True
                     input_function()
-                if not admin:
-                    r = buttons("Incorrect Admin Username or Password. \n \n Try again?", button_options=["Yes", "No"])
-                    if r == "Yes":
-                        admin_commands(input_function)
-                    if r == "No":
-                        return
+                if admin_username != input_user and admin_password != input_password:
+                    message("Incorrect Admin Username or Password.")
             if r == "No":
-                return
+                pass
 
     return wrapper
 

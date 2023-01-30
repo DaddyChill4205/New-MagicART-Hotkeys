@@ -1,1 +1,0 @@
-pythonw hotkeys_for_joe.py
