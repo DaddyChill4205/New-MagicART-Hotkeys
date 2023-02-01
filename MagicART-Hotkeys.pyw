@@ -19,7 +19,6 @@ awake = True
 keyboard_command = True
 complete = False
 admin = False
-run_bindings = True
 
 
 # makes sure only one instance of the program is running
@@ -30,17 +29,17 @@ except Exception as e:
 
 def check_user():
     global admin
-    r = double_input("Username", "Password")
-    if r == None:
+    result = double_input("Username", "Password")
+    if result == None:
         exit()
-    input_user, input_password = r.split(' ')
-    input_user = input_user.lower()
+    input_user, input_password = result.split(' ')
+    input_user = input_user
     with open("username_password.txt", "r") as file:
         username, password = file.read().split(" ")
-        username = username.lower()
+        username = username
     with open("admin_username_password.txt") as file:
         admin_username, admin_password = file.read().split(" ")
-        admin_username = admin_username.lower()
+        admin_username = admin_username
     if admin_username == input_user and admin_password == input_password:
         admin = True
         return
@@ -109,10 +108,10 @@ def admin_commands(input_function):
                 if r == None:
                     pass
                 input_user, input_password = r.split(' ')
-                input_user = input_user.lower()
+                input_user = input_user
                 with open("admin_username_password.txt") as file:
                     admin_username, admin_password = file.read().split(" ")
-                    admin_username = admin_username.lower()
+                    admin_username = admin_username
                 if admin_username == input_user and admin_password == input_password:
                     admin = True
                     input_function()
