@@ -1,17 +1,14 @@
 import random
 from time import sleep, time
-from os import chdir, startfile, system
+from os import startfile, system
 from webbrowser import open as webopen
-from tendo import singleton
 from tendo.singleton import SingleInstance
-from global_hotkeys import register_hotkeys, start_checking_hotkeys, stop_checking_hotkeys
+from global_hotkeys import register_hotkeys, start_checking_hotkeys
 from bot import click_if_exists, search_and_click, found, find, bclick
-from pyautogui import hotkey, moveTo, click
+from pyautogui import hotkey, moveTo
 from pyperclip import copy
-from win32gui import GetForegroundWindow, ShowWindow
-from win32con import SW_MINIMIZE
 from subprocess import call
-from message_boxes import message, buttons, input, double_input
+from message_boxes import message, buttons, double_input
 
 # Global Variables
 is_alive = True
@@ -26,6 +23,7 @@ try:
     only_one = SingleInstance()
 except Exception as e:
     message("Whoops:", e)
+
 
 def check_user():
     global admin
@@ -47,7 +45,8 @@ def check_user():
         admin = False
         return
     else:
-        r = buttons("Username or Password is incorrect. Try again?", button_options=["Yes", "No"])
+        r = buttons("Username or Password is incorrect. Try again?",
+                    button_options=["Yes", "No"])
         if r == "Yes":
             check_user()
         if r == "No":
@@ -59,6 +58,7 @@ def check_user():
 check_user()
 
 # prints a list of all the hotkeys
+#TODO: align text to the left side of window
 message(" F2: Go to 925 template \n F3: Go to 10K template \n F4: Go to 14K template \n F5: Go to Logos template \n F6: Open Toolbar \n F7: Hotkeys List \n F11: Close MagicART \n F12: Open MagicART \n Ctrl + Shift: Horizontal Allignment \n Ctrl + Alt: Center Allignment \n Alt + `: Toggle Keyboard Commands", "Hotkeys")
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -102,7 +102,8 @@ def admin_commands(input_function):
         if admin:
             input_function()
         if not admin:
-            r = buttons("You must have Administrator Privileges to use this command. \n \n Sign in as Admin?", button_options=["Yes", "No"])
+            r = buttons("You must have Administrator Privileges to use this command. \n \n Sign in as Admin?",
+                        button_options=["Yes", "No"])
             if r == "Yes":
                 r = double_input("Admin Username", "Admin Password")
                 if r == None:
@@ -134,22 +135,25 @@ def open_MagicArt():
 # make sure MagicART is full screen
     click_if_exists("images\\fullscreen.png")
 # find and click the object property pin
-    found = search_and_click(
+    found_pin = search_and_click(
         "images\\object property pin.png", region=(164, 46, 380, 213))
 # if the object property pin is not found, click the fullscreen button
-    if not found:
+    if not found_pin:
         click_if_exists("images\\open magicart.png", region=(827, 971, 1005, 1079)) or click_if_exists(
             "images\\highlighted open magicart.png", region=(827, 971, 1005, 1079))
         click_if_exists("images\\object property pin.png")
         click_if_exists("images\\fullscreen.png")
 # check that the engraver is connected
-    found = find("images\\engraver connected.png", region=(1717, 62, 1916, 242)) or find(
+    found_connected = find("images\\engraver connected.png", region=(1717, 62, 1916, 242)) or find(
         "images\\engraver connected 2.png", region=(1717, 62, 1916, 242))
 # if the engraver is not connected, close the application
-    if not found:
+    if not found_connected:
         call("taskkill /f /im MagicART.exe")
-        message("Engraver not connected")
-        return None
+        r = buttons("Engraver not connected! \n Try again?", button_options=["Yes", "No"])
+        if r == "Yes":
+            open_MagicArt()
+        if r == "No":
+            return None
 # if the engraver is connected, open all the templates
     for i in template_list:
         copy(i)
@@ -175,7 +179,7 @@ def open_MagicArt():
 @commands_on_off
 @admin_commands
 def open_Spotify():
-    # open Spotify application
+# open Spotify application
     startfile("C:\\Users\\rcherveny\\AppData\\Roaming\\Spotify\\Spotify.exe")
 # open bluetooth options
     click_if_exists("images\\Bluetooth.png", region=(1657, 980, 1846, 1079))
@@ -185,8 +189,8 @@ def open_Spotify():
                     region=(1684, 856, 1904, 1044))
     sleep(1.5)\
         # check if joe's airpods are connected
-    connected = found(r'images\\Bluetooth connected.png', region=(694, 6, 1878, 921)) or found(
-        r'images\\Bluetooth connected 2.png', region=(694, 6, 1878, 921))
+    connected = found('images\\Bluetooth connected.png', region=(694, 6, 1878, 921)) or found(
+        'images\\Bluetooth connected 2.png', region=(694, 6, 1878, 921))
 # if not connected, gives the option to connect
     if not connected:
         r = buttons("No devices connected. Try connecting?",
@@ -194,17 +198,17 @@ def open_Spotify():
         if r == 'Yes':
             # tries to connect to joe's airpods, if not connected after 20 seconds, gives up
             search_and_click(
-                r'images\\Bluetooth not connected.png', region=(694, 6, 1878, 921))
+                'images\\Bluetooth not connected.png', region=(694, 6, 1878, 921))
             timeout = 20
             timeout_start = time()
             while time() < timeout_start + timeout:
-                connected = found(r'images\\Bluetooth connected 2.png', region=(694, 6, 1878, 921)) or found(
-                    r'images\\Bluetooth connected.png', region=(694, 6, 1878, 921))
-                click_if_exists(r'images\\connect bluetooth.png',
+                connected = found('images\\Bluetooth connected 2.png', region=(694, 6, 1878, 921)) or found(
+                    'images\\Bluetooth connected.png', region=(694, 6, 1878, 921))
+                click_if_exists('images\\connect bluetooth.png',
                                 region=(694, 6, 1878, 921))
                 if connected:
                     message("Bluetooth Connected")
-                    click_if_exists(r'images\\exit bluetooth.png',
+                    click_if_exists('images\\exit bluetooth.png',
                                     region=(694, 6, 1878, 921))
                     return None
             if time() > timeout_start + timeout:
@@ -216,7 +220,7 @@ def open_Spotify():
 # if connected, messages the status and exits the bluetooth page
     if connected:
         message("Bluetooth Connected")
-        click_if_exists(r'images\\exit bluetooth.png',
+        click_if_exists('images\\exit bluetooth.png',
                         region=(1724, 0, 1886, 86))
 
 
@@ -228,7 +232,8 @@ def add_user():
     content = file.read()
 
     if r not in content:
-        r = buttons("Username or Password is incorrect. Try again?", button_options=["Yes", "No"])
+        r = buttons("Username or Password is incorrect. Try again?",
+                    button_options=["Yes", "No"])
         if r == "Yes":
             add_user()
         if r == "No":
@@ -245,6 +250,7 @@ def add_user():
             file.write('\n' + user)
         file.close()
 
+
 @commands_on_off
 def open_toolbar():
     '''
@@ -255,7 +261,7 @@ def open_toolbar():
     selection_to_function = {
         'Google': lambda: webopen(f"https://www.google.com/"),
         'Workday': lambda: webopen(f"https://www.myworkday.com/wday/authgwy/signetjewelers/login.htmld"),
-        'SKU Search': lambda: startfile(r'sku_search.py'),
+        'SKU Search': lambda: startfile('sku_search.py'),
         'Spotify': open_Spotify,
         'Calculator': lambda: system("calc"),
         'Add User': add_user,
@@ -280,12 +286,14 @@ def toggle_keyboard_commands():
     elif r == 'No':
         message("Well then why did you click the button?")
 
+
 @commands_on_off
 def end_program():
     r = buttons("Are you sure you want to end the program?", button_options=[
                 'Yes', 'No'])
     if r == 'Yes':
-        call (["taskkill", "/F", "/IM", "pythonw.exe"])
+        call(["taskkill", "/F", "/IM", "pythonw.exe"])
+
 
 @commands_on_off
 def shut_down_computer():
@@ -297,6 +305,7 @@ def shut_down_computer():
                 button_options=['Yes', 'No'])
     if r == 'Yes':
         system("shutdown /s /t 1")
+
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 # Key Bindings for Commands
