@@ -1,6 +1,8 @@
 import sys
 sys.path.insert(1, 'C:\\Users\\rcherveny\\Documents\\Code\\input_boxes')
-sys.path.insert(1, 'C:\\Users\\rcherveny\\Documents\\Code\\Bot')
+sys.path.insert(1, 'C:\\Users\\rcherveny\\Documents\\Code\\bot')
+
+
 import random
 from time import sleep, time
 from os import startfile, system
