@@ -1,8 +1,4 @@
 import sys
-sys.path.insert(1, 'C:\\Users\\rcherveny\\Documents\\Code\\input_boxes')
-sys.path.insert(1, 'C:\\Users\\rcherveny\\Documents\\Code\\bot')
-
-
 import random
 from time import sleep, time
 from os import startfile, system
@@ -13,7 +9,7 @@ from bot import click_if_exists, search_and_click, found, find, bclick
 from pyautogui import hotkey, moveTo
 from pyperclip import copy
 from subprocess import call
-from message_boxes import message, buttons, double_input
+from input_boxes import message, buttons, double_input
 
 # Global Variables
 is_alive = True
