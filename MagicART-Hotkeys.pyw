@@ -58,7 +58,6 @@ def check_user():
 check_user()
 
 # prints a list of all the hotkeys
-#TODO: align text to the left side of window
 message(" F2: Go to 925 template \n F3: Go to 10K template \n F4: Go to 14K template \n F5: Go to Logos template \n F6: Open Toolbar \n F7: Hotkeys List \n F11: Close MagicART \n F12: Open MagicART \n Ctrl + Shift: Horizontal Allignment \n Ctrl + Alt: Center Allignment \n Alt + `: Toggle Keyboard Commands", "Hotkeys")
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
