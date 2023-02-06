@@ -1,4 +1,3 @@
-import sys
 import random
 from time import sleep, time
 from os import startfile, system
