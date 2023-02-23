@@ -7,7 +7,7 @@ from global_hotkeys import register_hotkeys, start_checking_hotkeys
 from bot import click_if_exists, search_and_click, found, find, bclick
 from pyautogui import hotkey, moveTo
 from pyperclip import copy
-from subprocess import call
+from subprocess import call, Popen, PIPE
 from input_boxes import message, buttons, double_input
 
 # Global Variables
@@ -24,41 +24,39 @@ try:
 except Exception as e:
     message("Whoops:", e)
 
-
 def check_user():
     global admin
     result = double_input("Username", "Password")
     if result == None:
         exit()
-    input_user, input_password = result.split(' ')
-    input_user = input_user
-    with open("username_password.txt", "r") as file:
-        username, password = file.read().split(" ")
-        username = username
-    with open("admin_username_password.txt") as file:
-        admin_username, admin_password = file.read().split(" ")
-        admin_username = admin_username
-    if admin_username == input_user and admin_password == input_password:
+    file = open("username_password.txt", "r")
+    file2 = open("admin_username_password.txt", "r")
+    contents = file.read()
+    contents2 = file2.read()
+    if result not in contents and result not in contents2:
+        message("Incorrect Username or Password")
+        check_user()
+    if result in contents:
+        pass
+    if result in contents2:
         admin = True
-        return
-    elif username == input_user and password == input_password:
-        admin = False
-        return
-    else:
-        r = buttons("Username or Password is incorrect. Try again?",
-                    button_options=["Yes", "No"])
-        if r == "Yes":
-            check_user()
-        if r == "No":
-            exit()
-        if r == None:
-            exit()
-
-
+        pass
+    file.close()
 check_user()
 
+file = open("admin_username_password.txt", "r")
+contents = file.read()
+if contents == "No Users" or contents == "No Users\n":
+    file.close()
+    r = double_input("New Admin Username", "New Admin Password", "New Admin Credentials")
+    file = open("admin_username_password.txt", "a")
+    file.write('\n' + r)
+    file.close()
+
+
+
 # prints a list of all the hotkeys
-message(" F2: Go to 925 template \n F3: Go to 10K template \n F4: Go to 14K template \n F5: Go to Logos template \n F6: Open Toolbar \n F7: Hotkeys List \n F11: Close MagicART \n F12: Open MagicART \n Ctrl + Shift: Horizontal Allignment \n Ctrl + Alt: Center Allignment \n Alt + `: Toggle Keyboard Commands", "Hotkeys")
+message("F2: Go to 925 template\nF3: Go to 10K template\nF4: Go to 14K template\nF5: Go to Logos template\nF6: Open Toolbar\nF7: Hotkeys List\nF11: Close MagicART\nF12: Open MagicART\nCtrl + Shift: Horizontal Allignment\nCtrl + Alt: Center Allignment\nAlt + `: Toggle Keyboard Commands", "Hotkeys")
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -107,19 +105,15 @@ def admin_commands(input_function):
                 r = double_input("Admin Username", "Admin Password")
                 if r == None:
                     pass
-                input_user, input_password = r.split(' ')
-                input_user = input_user
-                with open("admin_username_password.txt") as file:
-                    admin_username, admin_password = file.read().split(" ")
-                    admin_username = admin_username
-                if admin_username == input_user and admin_password == input_password:
-                    admin = True
+                file = open("admin_username_password.txt")
+                contents = file.read()
+                if r in contents:
                     input_function()
-                if admin_username != input_user and admin_password != input_password:
-                    message("Incorrect Admin Username or Password.")
+                if r not in contents:
+                    message("Incorrect username and password.")
+                    wrapper()
             if r == "No":
                 pass
-
     return wrapper
 
 # Opens MagicART and opens all the templates
@@ -127,23 +121,16 @@ def admin_commands(input_function):
 
 @commands_on_off
 def open_MagicArt():
-    # move mouse to bottom right corner
-    moveTo(1260, 1079)
-# open MagicART application
-    startfile("C:\\Program Files (x86)\\MagicART 5\\MagicART.exe")
-# make sure MagicART is full screen
-    click_if_exists("images\\fullscreen.png")
-# find and click the object property pin
-    found_pin = search_and_click(
-        "images\\object property pin.png", region=(164, 46, 380, 213))
-# if the object property pin is not found, click the fullscreen button
+    moveTo(1300, 1079)
+# Open MagicArt and click the object property pin
+    click_if_exists("images\\open magicart.png", region=(827, 971, 1005, 1079))
+    found_pin = search_and_click("images\\object property pin.png", timeout=6, region=(164, 46, 380, 213))
     if not found_pin:
-        click_if_exists("images\\open magicart.png", region=(827, 971, 1005, 1079)) or click_if_exists(
-            "images\\highlighted open magicart.png", region=(827, 971, 1005, 1079))
-        click_if_exists("images\\object property pin.png")
+        click_if_exists("images\\highlighted open magicart.png", region=(827, 971, 1005, 1079))
+        search_and_click("images\\object property pin.png", region=(164, 46, 380, 213))
         click_if_exists("images\\fullscreen.png")
 # check that the engraver is connected
-    found_connected = find("images\\engraver connected.png", region=(1717, 62, 1916, 242)) or find(
+    found_connected = find("images\\engraver connected.png", timeout=3, region=(1717, 62, 1916, 242)) or find(
         "images\\engraver connected 2.png", region=(1717, 62, 1916, 242))
 # if the engraver is not connected, close the application
     if not found_connected:
@@ -171,6 +158,7 @@ def open_MagicArt():
         click_if_exists("images\\fit to page.png",
                         region=(332, 927, 519, 1028))
         click_if_exists("images\\15%.png", region=(371, 802, 524, 998))
+    click_if_exists("images\\object property pin.png", region=(164, 46, 380, 213))
 
 # opens Spotify and connects to Bluetooth
 
@@ -179,7 +167,7 @@ def open_MagicArt():
 @admin_commands
 def open_Spotify():
 # open Spotify application
-    startfile("C:\\Users\\rcherveny\\AppData\\Roaming\\Spotify\\Spotify.exe")
+    click_if_exists("images\\Spotify.png", region=(761, 1026, 864, 1079))
 # open bluetooth options
     click_if_exists("images\\Bluetooth.png", region=(1657, 980, 1846, 1079))
     sleep(0.5)
@@ -221,33 +209,75 @@ def open_Spotify():
         message("Bluetooth Connected")
         click_if_exists('images\\exit bluetooth.png',
                         region=(1724, 0, 1886, 86))
+        
+
+class Users(object):
+    global admin
+    def __init__(self):
+        self.admin = admin
+
+    def add_user(self):
+        r = double_input("Enter New Username", "Enter New Password")
+        file = open('username_password.txt', "a")
+        file.write('\n' + r)
+        file.close()
+
+    def check_if_admin(self):
+        r = double_input("Admin Username", "Admin Password")
+        file = open('admin_username_password.txt', "r")
+        content = file.read()
+        if r == None:
+            return
+        if r not in content:
+            r = buttons("Username or Password is incorrect. Try again?",
+                        button_options=["Yes", "No"])
+            if r == "Yes":
+                self.check_if_admin()
+            if r == "No":
+                return
+            if r == None:
+                return
+        if r in content:
+            self.admin = True
+            return True
+
+    def make_admin(self):
+        if self.check_if_admin():
+            r = double_input("Enter New Admin Username", "Enter New Admin Password")
+            file = open('admin_username_password.txt', "a")
+            file.write('\n' + r)
+            file.close()
+        else:
+            return
+        
+
+
+def add_user():
+    Users().add_user()
+
+def make_admin():
+    Users().make_admin()
+        
+def admin_login():
+    chadmin = Users().check_if_admin()
+    if chadmin:
+        message("Login Successful")
+    else:
+        message("Login Failed")
 
 
 @commands_on_off
-@admin_commands
-def add_user():
-    r = double_input("Admin Username", "Admin Password")
-    file = open('admin_username_password.txt', "r")
-    content = file.read()
+def user_settings():
+    selection = buttons('', 'User Settings', button_options=[
+                        'Add User', 'Make Admin', 'Admin Login'])
+    selection_to_function = {
+        'Add User': add_user,
+        'Make Admin': make_admin,
+        'Admin Login': admin_login,
+    }
 
-    if r not in content:
-        r = buttons("Username or Password is incorrect. Try again?",
-                    button_options=["Yes", "No"])
-        if r == "Yes":
-            add_user()
-        if r == "No":
-            exit()
-        if r == None:
-            exit()
-    if r == None:
-        return
-    if r in content:
-        r = double_input("Enter New Username", "Enter New Password")
-        users = [r]
-        file = open('username_password.txt', "a")
-        for user in users:
-            file.write('\n' + user)
-        file.close()
+    if selection in selection_to_function:
+        selection_to_function[selection]()
 
 
 @commands_on_off
@@ -256,14 +286,14 @@ def open_toolbar():
     Opens the toolbar to give the user some options
     '''
     selection = buttons('', 'Toolbar', button_options=[
-                        'Google', 'Workday', 'SKU Search', 'Spotify', 'Calculator', 'Add User', 'Shutdown'])
+                        'Google', 'Workday', 'SKU Search', 'Spotify', 'Calculator', 'User Settings', 'Shutdown'])
     selection_to_function = {
         'Google': lambda: webopen(f"https://www.google.com/"),
         'Workday': lambda: webopen(f"https://www.myworkday.com/wday/authgwy/signetjewelers/login.htmld"),
         'SKU Search': lambda: startfile('sku_search.py'),
         'Spotify': open_Spotify,
         'Calculator': lambda: system("calc"),
-        'Add User': add_user,
+        'User Settings': user_settings,
         'Shutdown': shut_down_computer
     }
     if selection in selection_to_function:
