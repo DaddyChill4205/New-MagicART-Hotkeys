@@ -29,8 +29,8 @@ def check_user():
     result = double_input("Username", "Password")
     if result == None:
         exit()
-    file = open("username_password.txt", "r")
-    file2 = open("admin_username_password.txt", "r")
+    file = open("TXT\\username_password.txt", "r")
+    file2 = open("TXT\\admin_username_password.txt", "r")
     contents = file.read()
     contents2 = file2.read()
     if result not in contents and result not in contents2:
@@ -44,12 +44,12 @@ def check_user():
     file.close()
 check_user()
 
-file = open("admin_username_password.txt", "r")
+file = open("TXT\\admin_username_password.txt", "r")
 contents = file.read()
 if contents == "No Users" or contents == "No Users\n":
     file.close()
     r = double_input("New Admin Username", "New Admin Password", "New Admin Credentials")
-    file = open("admin_username_password.txt", "a")
+    file = open("TXT\\admin_username_password.txt", "a")
     file.write('\n' + r)
     file.close()
 
@@ -68,9 +68,9 @@ template_list = [
     r"C:\Users\rcherveny\Desktop\MagicART saves\Logos Template.dgn"]
 
 zoom_list = [
-    "images\\Silver Template.png",
-    "images\\10K Template.png",
-    "images\\14K Template.png",]
+    "PNG\\Silver Template.png",
+    "PNG\\10K Template.png",
+    "PNG\\14K Template.png",]
 
 sleeplist = [
     "Don't fall asleep...",
@@ -105,7 +105,7 @@ def admin_commands(input_function):
                 r = double_input("Admin Username", "Admin Password")
                 if r == None:
                     pass
-                file = open("admin_username_password.txt")
+                file = open("TXT\\admin_username_password.txt")
                 contents = file.read()
                 if r in contents:
                     input_function()
@@ -123,15 +123,15 @@ def admin_commands(input_function):
 def open_MagicArt():
     moveTo(1300, 1079)
 # Open MagicArt and click the object property pin
-    click_if_exists("images\\open magicart.png", region=(827, 971, 1005, 1079))
-    found_pin = search_and_click("images\\object property pin.png", timeout=6, region=(164, 46, 380, 213))
+    click_if_exists("PNG\\open magicart.png", region=(827, 971, 1005, 1079))
+    found_pin = search_and_click("PNG\\object property pin.png", timeout=6, region=(164, 46, 380, 213))
     if not found_pin:
-        click_if_exists("images\\highlighted open magicart.png", region=(827, 971, 1005, 1079))
-        search_and_click("images\\object property pin.png", region=(164, 46, 380, 213))
-        click_if_exists("images\\fullscreen.png")
+        click_if_exists("PNG\\highlighted open magicart.png", region=(827, 971, 1005, 1079))
+        search_and_click("PNG\\object property pin.png", region=(164, 46, 380, 213))
+        click_if_exists("PNG\\fullscreen.png")
 # check that the engraver is connected
-    found_connected = find("images\\engraver connected.png", timeout=3, region=(1717, 62, 1916, 242)) or find(
-        "images\\engraver connected 2.png", region=(1717, 62, 1916, 242))
+    found_connected = find("PNG\\engraver connected.png", timeout=3, region=(1717, 62, 1916, 242)) or find(
+        "PNG\\engraver connected 2.png", region=(1717, 62, 1916, 242))
 # if the engraver is not connected, close the application
     if not found_connected:
         call("taskkill /f /im MagicART.exe")
@@ -149,16 +149,16 @@ def open_MagicArt():
         hotkey("enter")
         sleep(0.7)
 # size the logos template to 10%
-    click_if_exists("images\\fit to page.png", region=(332, 927, 519, 1028))
+    click_if_exists("PNG\\fit to page.png", region=(332, 927, 519, 1028))
     sleep(0.5)
-    click_if_exists("images\\10%.png", region=(371, 802, 524, 998))
+    click_if_exists("PNG\\10%.png", region=(371, 802, 524, 998))
 # size the rest of the templates to 15%
     for j in zoom_list:
         click_if_exists(j, region=(150, 64, 853, 128))
-        click_if_exists("images\\fit to page.png",
+        click_if_exists("PNG\\fit to page.png",
                         region=(332, 927, 519, 1028))
-        click_if_exists("images\\15%.png", region=(371, 802, 524, 998))
-    click_if_exists("images\\object property pin.png", region=(164, 46, 380, 213))
+        click_if_exists("PNG\\15%.png", region=(371, 802, 524, 998))
+    click_if_exists("PNG\\object property pin.png", region=(164, 46, 380, 213))
 
 # opens Spotify and connects to Bluetooth
 
@@ -167,17 +167,17 @@ def open_MagicArt():
 @admin_commands
 def open_Spotify():
 # open Spotify application
-    click_if_exists("images\\Spotify.png", region=(761, 1026, 864, 1079))
+    click_if_exists("PNG\\Spotify.png", region=(761, 1026, 864, 1079))
 # open bluetooth options
-    click_if_exists("images\\Bluetooth.png", region=(1657, 980, 1846, 1079))
+    click_if_exists("PNG\\Bluetooth.png", region=(1657, 980, 1846, 1079))
     sleep(0.5)
 # opens bluetooth and other devices page
-    click_if_exists("images\\Show Bluetooth devices.png",
+    click_if_exists("PNG\\Show Bluetooth devices.png",
                     region=(1684, 856, 1904, 1044))
     sleep(1.5)\
         # check if joe's airpods are connected
-    connected = found('images\\Bluetooth connected.png', region=(694, 6, 1878, 921)) or found(
-        'images\\Bluetooth connected 2.png', region=(694, 6, 1878, 921))
+    connected = found('PNG\\Bluetooth connected.png', region=(694, 6, 1878, 921)) or found(
+        'PNG\\Bluetooth connected 2.png', region=(694, 6, 1878, 921))
 # if not connected, gives the option to connect
     if not connected:
         r = buttons("No devices connected. Try connecting?",
@@ -185,17 +185,17 @@ def open_Spotify():
         if r == 'Yes':
             # tries to connect to joe's airpods, if not connected after 20 seconds, gives up
             search_and_click(
-                'images\\Bluetooth not connected.png', region=(694, 6, 1878, 921))
+                'PNG\\Bluetooth not connected.png', region=(694, 6, 1878, 921))
             timeout = 20
             timeout_start = time()
             while time() < timeout_start + timeout:
-                connected = found('images\\Bluetooth connected 2.png', region=(694, 6, 1878, 921)) or found(
-                    'images\\Bluetooth connected.png', region=(694, 6, 1878, 921))
-                click_if_exists('images\\connect bluetooth.png',
+                connected = found('PNG\\Bluetooth connected 2.png', region=(694, 6, 1878, 921)) or found(
+                    'PNG\\Bluetooth connected.png', region=(694, 6, 1878, 921))
+                click_if_exists('PNG\\connect bluetooth.png',
                                 region=(694, 6, 1878, 921))
                 if connected:
                     message("Bluetooth Connected")
-                    click_if_exists('images\\exit bluetooth.png',
+                    click_if_exists('PNG\\exit bluetooth.png',
                                     region=(694, 6, 1878, 921))
                     return None
             if time() > timeout_start + timeout:
@@ -207,7 +207,7 @@ def open_Spotify():
 # if connected, messages the status and exits the bluetooth page
     if connected:
         message("Bluetooth Connected")
-        click_if_exists('images\\exit bluetooth.png',
+        click_if_exists('PNG\\exit bluetooth.png',
                         region=(1724, 0, 1886, 86))
         
 
@@ -218,13 +218,13 @@ class Users(object):
 
     def add_user(self):
         r = double_input("Enter New Username", "Enter New Password")
-        file = open('username_password.txt', "a")
+        file = open('TXT\\username_password.txt', "a")
         file.write('\n' + r)
         file.close()
 
     def check_if_admin(self):
         r = double_input("Admin Username", "Admin Password")
-        file = open('admin_username_password.txt', "r")
+        file = open('TXT\\admin_username_password.txt', "r")
         content = file.read()
         if r == None:
             return
@@ -244,7 +244,7 @@ class Users(object):
     def make_admin(self):
         if self.check_if_admin():
             r = double_input("Enter New Admin Username", "Enter New Admin Password")
-            file = open('admin_username_password.txt', "a")
+            file = open('TXT\\admin_username_password.txt', "a")
             file.write('\n' + r)
             file.close()
         else:
