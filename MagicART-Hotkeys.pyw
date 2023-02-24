@@ -282,8 +282,8 @@ def user_settings():
 def engraving_documents():
     selection = buttons('', 'Engraving Documents', button_options=['Engraving Guide', 'BB-5S Manual'])
     selection_to_function = {
-        'Engraving Guide': lambda: startfile(r'C:\Users\rcherveny\Desktop\MagicART Documents\Engraving Guide.docx'),
-        'BB-5S Manual': lambda: startfile(r'C:\Users\rcherveny\Desktop\MagicART Documents\magic-5s.docx')
+        'Engraving Guide': lambda: startfile(r'C:\Users\rcherveny\Documents\Code\MagicART-Hotkeys\PDF\Engraving Guide.pdf'),
+        'BB-5S Manual': lambda: startfile(r'C:\Users\rcherveny\Documents\Code\MagicART-Hotkeys\PDF\magic-5s.pdf')
     }
     if selection in selection_to_function:
         selection_to_function[selection]()
