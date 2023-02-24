@@ -7,7 +7,7 @@ from global_hotkeys import register_hotkeys, start_checking_hotkeys
 from bot import click_if_exists, search_and_click, found, find, bclick
 from pyautogui import hotkey, moveTo
 from pyperclip import copy
-from subprocess import call, Popen, PIPE
+from subprocess import call
 from input_boxes import message, buttons, double_input
 
 # Global Variables
@@ -275,10 +275,18 @@ def user_settings():
         'Make Admin': make_admin,
         'Admin Login': admin_login,
     }
-
     if selection in selection_to_function:
         selection_to_function[selection]()
 
+
+def engraving_documents():
+    selection = buttons('', 'Engraving Documents', button_options=['Engraving Guide', 'BB-5S Manual'])
+    selection_to_function = {
+        'Engraving Guide': lambda: startfile(r'C:\Users\rcherveny\Desktop\MagicART Documents\Engraving Guide.docx'),
+        'BB-5S Manual': lambda: startfile(r'C:\Users\rcherveny\Desktop\MagicART Documents\magic-5s.docx')
+    }
+    if selection in selection_to_function:
+        selection_to_function[selection]()
 
 @commands_on_off
 def open_toolbar():
@@ -286,11 +294,12 @@ def open_toolbar():
     Opens the toolbar to give the user some options
     '''
     selection = buttons('', 'Toolbar', button_options=[
-                        'Google', 'Workday', 'SKU Search', 'Spotify', 'Calculator', 'User Settings', 'Shutdown'])
+                        'Google', 'Workday', 'SKU Search', 'Engraving Documents', 'Spotify', 'Calculator', 'User Settings', 'Shutdown'])
     selection_to_function = {
         'Google': lambda: webopen(f"https://www.google.com/"),
         'Workday': lambda: webopen(f"https://www.myworkday.com/wday/authgwy/signetjewelers/login.htmld"),
         'SKU Search': lambda: startfile('sku_search.py'),
+        'Engraving Documents': engraving_documents,
         'Spotify': open_Spotify,
         'Calculator': lambda: system("calc"),
         'User Settings': user_settings,
