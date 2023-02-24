@@ -122,10 +122,12 @@ def admin_commands(input_function):
 @commands_on_off
 def open_MagicArt():
     moveTo(1300, 1079)
-# Open MagicArt and click the object property pin
-    click_if_exists("PNG\\open magicart.png", region=(827, 971, 1005, 1079))
+# open MagicART.exe
+    startfile(r"C:\Program Files (x86)\MagicART 5\MagicART.exe")
+# click the object property pin
     found_pin = search_and_click("PNG\\object property pin.png", timeout=6, region=(164, 46, 380, 213))
     if not found_pin:
+        click_if_exists("PNG\\open magicart.png", region=(827, 971, 1005, 1079))
         click_if_exists("PNG\\highlighted open magicart.png", region=(827, 971, 1005, 1079))
         search_and_click("PNG\\object property pin.png", region=(164, 46, 380, 213))
         click_if_exists("PNG\\fullscreen.png")
@@ -167,7 +169,7 @@ def open_MagicArt():
 @admin_commands
 def open_Spotify():
 # open Spotify application
-    click_if_exists("PNG\\Spotify.png", region=(761, 1026, 864, 1079))
+    startfile(r"C:\Users\rcherveny\AppData\Roaming\Spotify\Spotify.exe")
 # open bluetooth options
     click_if_exists("PNG\\Bluetooth.png", region=(1657, 980, 1846, 1079))
     sleep(0.5)
