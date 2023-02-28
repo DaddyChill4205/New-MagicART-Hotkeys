@@ -292,6 +292,7 @@ def engraving_documents():
 
 def open_workday():
     click_if_exists("PNG\\Google.png", region=(669, 1030, 747, 1076))
+    sleep(1)
     webopen(f"https://www.myworkday.com/wday/authgwy/signetjewelers/login.htmld")
 
 @commands_on_off
