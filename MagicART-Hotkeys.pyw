@@ -123,7 +123,7 @@ def admin_commands(input_function):
 def open_MagicArt():
     moveTo(1300, 1079)
 # open MagicART.exe
-    startfile(r"C:\Program Files (x86)\MagicART 5\MagicART.exe")
+    click_if_exists("PNG\\open magicart.png", region=(827, 971, 1005, 1079))
 # click the object property pin
     found_pin = search_and_click("PNG\\object property pin.png", timeout=6, region=(164, 46, 380, 213))
     if not found_pin:
@@ -169,7 +169,7 @@ def open_MagicArt():
 @admin_commands
 def open_Spotify():
 # open Spotify application
-    startfile(r"C:\Users\rcherveny\AppData\Roaming\Spotify\Spotify.exe")
+    click_if_exists("PNG\\Spotify.png", region=(778, 1033, 839, 1076))
 # open bluetooth options
     click_if_exists("PNG\\Bluetooth.png", region=(1657, 980, 1846, 1079))
     sleep(0.5)
@@ -290,16 +290,19 @@ def engraving_documents():
     if selection in selection_to_function:
         selection_to_function[selection]()
 
+def open_workday():
+    click_if_exists("PNG\\Google.png", region=(669, 1030, 747, 1076))
+    webopen(f"https://www.myworkday.com/wday/authgwy/signetjewelers/login.htmld")
+
 @commands_on_off
 def open_toolbar():
     '''
     Opens the toolbar to give the user some options
     '''
     selection = buttons('', 'Toolbar', button_options=[
-                        'Google', 'Workday', 'SKU Search', 'Engraving Documents', 'Spotify', 'Calculator', 'User Settings', 'Shutdown'])
+                        'Workday', 'SKU Search', 'Engraving Documents', 'Spotify', 'Calculator', 'User Settings', 'Shutdown'])
     selection_to_function = {
-        'Google': lambda: webopen(f"https://www.google.com/"),
-        'Workday': lambda: webopen(f"https://www.myworkday.com/wday/authgwy/signetjewelers/login.htmld"),
+        'Workday': open_workday,
         'SKU Search': lambda: startfile('sku_search.py'),
         'Engraving Documents': engraving_documents,
         'Spotify': open_Spotify,
