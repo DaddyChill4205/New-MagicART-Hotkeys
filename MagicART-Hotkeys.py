@@ -63,7 +63,7 @@ if contents == "No Users" or contents == "No Users\n":
 
 # Commands List:
 '''Prints a list of all the commands to the console.'''
-print("F2: Go to 925 template\nF3: Go to 10K template\nF4: Go to 14K template\nF5: Go to Logos template\nF6: Open Toolbar\nF7: Hotkeys List\nF11: Close MagicART\nF12: Open MagicART\nCtrl + Shift: Horizontal Allignment\nCtrl + Alt: Center Allignment\nAlt + `: Toggle Keyboard Commands\n----------------------------------------------")
+print("F2: Go to 925 template\nF3: Go to 10K template\nF4: Go to 14K template\nF5: Go to Logos template\nF6: Open Toolbar\nF7: Hotkeys List\nF11: Close MagicART\nF12: Open MagicART\nCtrl + Shift: Horizontal Allignment\nCtrl + Alt: Center Allignment\nAlt + `: Toggle Keyboard Commands\n\n----------------------------------------------")
 
 
 # Lists:
