@@ -7,7 +7,7 @@ from global_hotkeys import register_hotkeys, start_checking_hotkeys
 from bot import click_if_exists, search_and_click, found, find, bclick
 from pyautogui import hotkey, moveTo
 from pyperclip import copy
-from subprocess import call, Popen, STDOUT, DEVNULL
+from subprocess import call
 from input_boxes import message, buttons, double_input
 from win32gui import MoveWindow, FindWindow
 
