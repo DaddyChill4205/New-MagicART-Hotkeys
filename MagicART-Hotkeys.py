@@ -7,8 +7,9 @@ from global_hotkeys import register_hotkeys, start_checking_hotkeys
 from bot import click_if_exists, search_and_click, found, find, bclick
 from pyautogui import hotkey, moveTo
 from pyperclip import copy
-from subprocess import call
+from subprocess import call, Popen, STDOUT, DEVNULL
 from input_boxes import message, buttons, double_input
+from win32gui import MoveWindow, FindWindow
 
 # Global Variables
 is_alive = True
@@ -19,10 +20,14 @@ admin = False
 
 
 # makes sure only one instance of the program is running
+only_one = SingleInstance()
+
+# resizes the window, and moves it to the bottom left corner. 
 try:
-    only_one = SingleInstance()
+    hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
+    MoveWindow(hwnd, -7, 750, 407, 300, True)
 except Exception as e:
-    message("Whoops:", e)
+    message(f"Whoops: {e}")
 
 def check_user():
     global admin
@@ -56,7 +61,7 @@ if contents == "No Users" or contents == "No Users\n":
 
 
 # prints a list of all the hotkeys
-message("F2: Go to 925 template\nF3: Go to 10K template\nF4: Go to 14K template\nF5: Go to Logos template\nF6: Open Toolbar\nF7: Hotkeys List\nF11: Close MagicART\nF12: Open MagicART\nCtrl + Shift: Horizontal Allignment\nCtrl + Alt: Center Allignment\nAlt + `: Toggle Keyboard Commands", "Hotkeys")
+print("F2: Go to 925 template\nF3: Go to 10K template\nF4: Go to 14K template\nF5: Go to Logos template\nF6: Open Toolbar\nF7: Hotkeys List\nF11: Close MagicART\nF12: Open MagicART\nCtrl + Shift: Horizontal Allignment\nCtrl + Alt: Center Allignment\nAlt + `: Toggle Keyboard Commands\n----------------------------------------------")
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -123,12 +128,11 @@ def admin_commands(input_function):
 def open_MagicArt():
     moveTo(1300, 1079)
 # open MagicART.exe
-    click_if_exists("PNG\\open magicart.png", region=(827, 971, 1005, 1079))
+    startfile(r"C:\Program Files (x86)\MagicART 5\MagicART.exe")
 # click the object property pin
     found_pin = search_and_click("PNG\\object property pin.png", timeout=6, region=(164, 46, 380, 213))
     if not found_pin:
-        click_if_exists("PNG\\open magicart.png", region=(827, 971, 1005, 1079))
-        click_if_exists("PNG\\highlighted open magicart.png", region=(827, 971, 1005, 1079))
+        click_if_exists("PNG\\open magicart.png", region=(827, 971, 1005, 1079)) or click_if_exists("PNG\\highlighted open magicart.png", region=(827, 971, 1005, 1079))
         search_and_click("PNG\\object property pin.png", region=(164, 46, 380, 213))
         click_if_exists("PNG\\fullscreen.png")
 # check that the engraver is connected
@@ -169,7 +173,7 @@ def open_MagicArt():
 @admin_commands
 def open_Spotify():
 # open Spotify application
-    click_if_exists("PNG\\Spotify.png", region=(778, 1033, 839, 1076))
+    startfile(r"C:\Users\rcherveny\AppData\Roaming\Spotify\Spotify.exe")
 # open bluetooth options
     click_if_exists("PNG\\Bluetooth.png", region=(1657, 980, 1846, 1079))
     sleep(0.5)
@@ -290,10 +294,6 @@ def engraving_documents():
     if selection in selection_to_function:
         selection_to_function[selection]()
 
-def open_workday():
-    click_if_exists("PNG\\Google.png", region=(669, 1030, 747, 1076))
-    sleep(1)
-    webopen(f"https://www.myworkday.com/wday/authgwy/signetjewelers/login.htmld")
 
 @commands_on_off
 def open_toolbar():
@@ -303,7 +303,7 @@ def open_toolbar():
     selection = buttons('', 'Toolbar', button_options=[
                         'Workday', 'SKU Search', 'Engraving Documents', 'Spotify', 'Calculator', 'User Settings', 'Shutdown'])
     selection_to_function = {
-        'Workday': open_workday,
+        'Workday': lambda: webopen(f"https://www.myworkday.com/wday/authgwy/signetjewelers/login.htmld"),
         'SKU Search': lambda: startfile('sku_search.py'),
         'Engraving Documents': engraving_documents,
         'Spotify': open_Spotify,
@@ -336,7 +336,8 @@ def end_program():
     r = buttons("Are you sure you want to end the program?", button_options=[
                 'Yes', 'No'])
     if r == 'Yes':
-        call(["taskkill", "/F", "/IM", "pythonw.exe"])
+        # end the program
+        call(["taskkill", "/F", "/IM", "python.exe"])
 
 
 @commands_on_off
