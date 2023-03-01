@@ -1,8 +1,8 @@
+# Imports:
 import random
 from time import sleep, time
 from os import startfile, system
 from webbrowser import open as webopen
-from tendo.singleton import SingleInstance
 from global_hotkeys import register_hotkeys, start_checking_hotkeys
 from bot import click_if_exists, search_and_click, found, find, bclick
 from pyautogui import hotkey, moveTo
@@ -10,25 +10,26 @@ from pyperclip import copy
 from subprocess import call
 from input_boxes import message, buttons, double_input
 from win32gui import MoveWindow, FindWindow
+from tendo.singleton import SingleInstance
 
-# Global Variables
-is_alive = True
-awake = True
-keyboard_command = True
-complete = False
-admin = False
-
-
-# makes sure only one instance of the program is running
+# Startup Process:
+'''Checks to make sure there is only one instance of the program. Then, resizes the window, and moves it to the bottom left corner.'''
 only_one = SingleInstance()
-
-# resizes the window, and moves it to the bottom left corner. 
 try:
     hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
     MoveWindow(hwnd, -7, 750, 407, 300, True)
 except Exception as e:
     message(f"Whoops: {e}")
 
+# Global Variables:
+is_alive = True
+awake = True
+keyboard_command = True
+complete = False
+admin = False
+
+# User Sign In:
+'''Asks the user to sign in. If the user is an admin, it gives them admin priveleges.'''
 def check_user():
     global admin
     result = double_input("Username", "Password")
@@ -49,6 +50,8 @@ def check_user():
     file.close()
 check_user()
 
+# Check for Admin Users:
+'''Checks to see if there are any admin users. If there are none, it asks the user to create an admin user.'''
 file = open("TXT\\admin_username_password.txt", "r")
 contents = file.read()
 if contents == "No Users" or contents == "No Users\n":
@@ -58,14 +61,12 @@ if contents == "No Users" or contents == "No Users\n":
     file.write('\n' + r)
     file.close()
 
-
-
-# prints a list of all the hotkeys
+# Commands List:
+'''Prints a list of all the commands to the console.'''
 print("F2: Go to 925 template\nF3: Go to 10K template\nF4: Go to 14K template\nF5: Go to Logos template\nF6: Open Toolbar\nF7: Hotkeys List\nF11: Close MagicART\nF12: Open MagicART\nCtrl + Shift: Horizontal Allignment\nCtrl + Alt: Center Allignment\nAlt + `: Toggle Keyboard Commands\n----------------------------------------------")
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-# Lists
+# Lists:
 template_list = [
     r"C:\Users\rcherveny\Desktop\MagicART saves\.925 Template.dgn",
     r"C:\Users\rcherveny\Desktop\MagicART saves\10K Template.dgn",
@@ -83,10 +84,9 @@ sleeplist = [
     "Can't sleep yet...",
     "So tired..."]
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-# Decorator to turn keyboard commands on and off
 
-
+# Wrappers:
+'''Checks if keyboard commands are on or off. If they are off, it will not run the command.'''
 def commands_on_off(input_function):
     def wrapper():
         global keyboard_command
@@ -98,6 +98,7 @@ def commands_on_off(input_function):
     return wrapper
 
 
+'''Checks if the user is an admin. If they are not, it will ask them to sign in as an admin.'''
 def admin_commands(input_function):
     def wrapper():
         global admin
@@ -121,24 +122,65 @@ def admin_commands(input_function):
                 pass
     return wrapper
 
-# Opens MagicART and opens all the templates
+
+# Classes:
+'''Gives multiple functions that deal with user accounts and privileges.'''
+class Users(object):
+    global admin
+    def __init__(self):
+        self.admin = admin
+
+    '''Creates a new user account.'''
+    def add_user(self):
+        r = double_input("Enter New Username", "Enter New Password")
+        file = open('TXT\\username_password.txt', "a")
+        file.write('\n' + r)
+        file.close()
+
+    '''Checks if the user is an admin.'''
+    def check_if_admin(self):
+        r = double_input("Admin Username", "Admin Password")
+        file = open('TXT\\admin_username_password.txt', "r")
+        content = file.read()
+        if r == None:
+            return
+        if r not in content:
+            r = buttons("Username or Password is incorrect. Try again?",
+                        button_options=["Yes", "No"])
+            if r == "Yes":
+                self.check_if_admin()
+            if r == "No":
+                return
+            if r == None:
+                return
+        if r in content:
+            self.admin = True
+            return True
+
+    '''Creates a new admin account.'''
+    def make_admin(self):
+        if self.check_if_admin():
+            r = double_input("Enter New Admin Username", "Enter New Admin Password")
+            file = open('TXT\\admin_username_password.txt', "a")
+            file.write('\n' + r)
+            file.close()
+        else:
+            return
 
 
+# Functions:
+'''Opens MagicART and all the necessary templates.'''
 @commands_on_off
 def open_MagicArt():
     moveTo(1300, 1079)
-# open MagicART.exe
     startfile(r"C:\Program Files (x86)\MagicART 5\MagicART.exe")
-# click the object property pin
     found_pin = search_and_click("PNG\\object property pin.png", timeout=6, region=(164, 46, 380, 213))
     if not found_pin:
         click_if_exists("PNG\\open magicart.png", region=(827, 971, 1005, 1079)) or click_if_exists("PNG\\highlighted open magicart.png", region=(827, 971, 1005, 1079))
         search_and_click("PNG\\object property pin.png", region=(164, 46, 380, 213))
         click_if_exists("PNG\\fullscreen.png")
-# check that the engraver is connected
     found_connected = find("PNG\\engraver connected.png", timeout=3, region=(1717, 62, 1916, 242)) or find(
         "PNG\\engraver connected 2.png", region=(1717, 62, 1916, 242))
-# if the engraver is not connected, close the application
     if not found_connected:
         call("taskkill /f /im MagicART.exe")
         r = buttons("Engraver not connected! \n Try again?", button_options=["Yes", "No"])
@@ -146,7 +188,6 @@ def open_MagicArt():
             open_MagicArt()
         if r == "No":
             return None
-# if the engraver is connected, open all the templates
     for i in template_list:
         copy(i)
         hotkey("ctrl", "o")
@@ -154,11 +195,9 @@ def open_MagicArt():
         hotkey("ctrl", "v")
         hotkey("enter")
         sleep(0.7)
-# size the logos template to 10%
     click_if_exists("PNG\\fit to page.png", region=(332, 927, 519, 1028))
     sleep(0.5)
     click_if_exists("PNG\\10%.png", region=(371, 802, 524, 998))
-# size the rest of the templates to 15%
     for j in zoom_list:
         click_if_exists(j, region=(150, 64, 853, 128))
         click_if_exists("PNG\\fit to page.png",
@@ -166,9 +205,8 @@ def open_MagicArt():
         click_if_exists("PNG\\15%.png", region=(371, 802, 524, 998))
     click_if_exists("PNG\\object property pin.png", region=(164, 46, 380, 213))
 
-# opens Spotify and connects to Bluetooth
 
-
+'''Opens Spotify and connects to Joe's Airpods.'''
 @commands_on_off
 @admin_commands
 def open_Spotify():
@@ -215,55 +253,9 @@ def open_Spotify():
         message("Bluetooth Connected")
         click_if_exists('PNG\\exit bluetooth.png',
                         region=(1724, 0, 1886, 86))
-        
-
-class Users(object):
-    global admin
-    def __init__(self):
-        self.admin = admin
-
-    def add_user(self):
-        r = double_input("Enter New Username", "Enter New Password")
-        file = open('TXT\\username_password.txt', "a")
-        file.write('\n' + r)
-        file.close()
-
-    def check_if_admin(self):
-        r = double_input("Admin Username", "Admin Password")
-        file = open('TXT\\admin_username_password.txt', "r")
-        content = file.read()
-        if r == None:
-            return
-        if r not in content:
-            r = buttons("Username or Password is incorrect. Try again?",
-                        button_options=["Yes", "No"])
-            if r == "Yes":
-                self.check_if_admin()
-            if r == "No":
-                return
-            if r == None:
-                return
-        if r in content:
-            self.admin = True
-            return True
-
-    def make_admin(self):
-        if self.check_if_admin():
-            r = double_input("Enter New Admin Username", "Enter New Admin Password")
-            file = open('TXT\\admin_username_password.txt', "a")
-            file.write('\n' + r)
-            file.close()
-        else:
-            return
-        
 
 
-def add_user():
-    Users().add_user()
-
-def make_admin():
-    Users().make_admin()
-        
+'''Checks if the user is an admin and alerts them if they are not.'''
 def admin_login():
     chadmin = Users().check_if_admin()
     if chadmin:
@@ -272,19 +264,22 @@ def admin_login():
         message("Login Failed")
 
 
+'''Gives multiple functions that deal with user accounts and privileges.'''
+@admin_commands
 @commands_on_off
 def user_settings():
     selection = buttons('', 'User Settings', button_options=[
                         'Add User', 'Make Admin', 'Admin Login'])
     selection_to_function = {
-        'Add User': add_user,
-        'Make Admin': make_admin,
+        'Add User': lambda: Users().add_user(),
+        'Make Admin': lambda: Users().make_admin(),
         'Admin Login': admin_login,
     }
     if selection in selection_to_function:
         selection_to_function[selection]()
 
 
+'''Gives access to the Engraving Guide and the BB5-S User Manual.'''
 def engraving_documents():
     selection = buttons('', 'Engraving Documents', button_options=['Engraving Guide', 'BB-5S Manual'])
     selection_to_function = {
@@ -295,11 +290,9 @@ def engraving_documents():
         selection_to_function[selection]()
 
 
+'''Opens a toolbar with common automated tasks.'''
 @commands_on_off
 def open_toolbar():
-    '''
-    Opens the toolbar to give the user some options
-    '''
     selection = buttons('', 'Toolbar', button_options=[
                         'Workday', 'SKU Search', 'Engraving Documents', 'Spotify', 'Calculator', 'User Settings', 'Shutdown'])
     selection_to_function = {
@@ -315,10 +308,8 @@ def open_toolbar():
         selection_to_function[selection]()
 
 
+'''Toggles the keyboard commands on and off.'''
 def toggle_keyboard_commands():
-    '''
-    Enables or disables keyboard commands
-    '''
     global keyboard_command
     enable_disable = 'DISABLE' if keyboard_command else 'ENABLE'
     on_off = 'OFF' if keyboard_command else 'ON'
@@ -331,6 +322,7 @@ def toggle_keyboard_commands():
         message("Well then why did you click the button?")
 
 
+'''Terminates this program.'''
 @commands_on_off
 def end_program():
     r = buttons("Are you sure you want to end the program?", button_options=[
@@ -340,6 +332,7 @@ def end_program():
         call(["taskkill", "/F", "/IM", "python.exe"])
 
 
+'''Shuts down the computer.'''
 @commands_on_off
 def shut_down_computer():
     '''
@@ -352,8 +345,7 @@ def shut_down_computer():
         system("shutdown /s /t 1")
 
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-# Key Bindings for Commands
+# Key Bindings for Commands:
 bindings = [
     # go to 925 template
     [["F2"], None, commands_on_off(lambda: bclick(240, 95))],
@@ -377,12 +369,10 @@ bindings = [
         bclick(475, 65))],  # center allignment
 ]
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+# Always Running Code:
 start_checking_hotkeys()
-
 register_hotkeys(bindings)
-
 while awake:
     # pick a random phrase from the sleeplist to print, then sleep for 5 minutes and press f15
     print(random.choice(sleeplist))
