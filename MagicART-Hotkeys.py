@@ -1,7 +1,7 @@
 # Imports:
 import random
 from time import sleep, time
-from os import startfile, system
+from os import startfile, system, path
 from webbrowser import open as webopen
 from global_hotkeys import register_hotkeys, start_checking_hotkeys
 from bot import click_if_exists, search_and_click, found, find, bclick
@@ -21,18 +21,9 @@ try:
 except Exception as e:
     message(f"Whoops: {e}")
 
-# Global Variables:
-is_alive = True
-awake = True
-keyboard_command = True
-complete = False
-admin = False
-
-# User Sign In:
-'''Asks the user to sign in. If the user is an admin, it gives them admin priveleges.'''
-def check_user():
+def login():
     global admin
-    result = double_input("Username", "Password")
+    result = double_input("Username", "Password", )
     if result == None:
         exit()
     file = open("TXT\\username_password.txt", "r")
@@ -40,26 +31,101 @@ def check_user():
     contents = file.read()
     contents2 = file2.read()
     if result not in contents and result not in contents2:
-        message("Incorrect Username or Password")
-        check_user()
+        b = buttons("Incorrect Username or Password. Would you like to create a new account?", button_options=["Yes", "No"])
+        if b == None:
+            exit()
+        if b == "Yes":
+            r = double_input("New Username", "New Password", "New User")
+            file = open("TXT\\username_password.txt", "a")
+            file.write('\n' + r)
+            file.close()
+        if b == "No":
+            login()
     if result in contents:
         pass
     if result in contents2:
         admin = True
         pass
     file.close()
+
+# Check for Users:
+'''Checks to see if there are any users. If there are none, it asks the user to create a user account.'''
+def check_user():
+    if path.getsize("TXT\\username_password.txt") != 0 and path.getsize("TXT\\admin_username_password.txt") != 0:
+        login()
+    if path.getsize("TXT\\username_password.txt") == 0 and path.getsize("TXT\\admin_username_password.txt") != 0:
+        login()
+    if path.getsize("TXT\\username_password.txt") != 0 and path.getsize("TXT\\admin_username_password.txt") == 0:
+        message("There are no Admin users. Please create an Admin user account.")
+        r = double_input("New Admin Username", "New Admin Password", "New Admin Credentials")
+        file = open("TXT\\admin_username_password.txt", "a")
+        file.write('\n' + r)
+        file.close()
+    if path.getsize("TXT\\username_password.txt") == 0 and path.getsize("TXT\\admin_username_password.txt") == 0:
+        message("There are no Admin users. Please create an Admin user account.")
+        r = double_input("New Admin Username", "New Admin Password", "New Admin Credentials")
+        file = open("TXT\\admin_username_password.txt", "a")
+        file.write('\n' + r)
+        file.close()
 check_user()
 
-# Check for Admin Users:
-'''Checks to see if there are any admin users. If there are none, it asks the user to create an admin user.'''
-file = open("TXT\\admin_username_password.txt", "r")
-contents = file.read()
-if contents == "No Users" or contents == "No Users\n":
+# Global Variables:
+is_alive = True
+awake = True
+keyboard_command = True
+complete = False
+admin = False
+
+# Login:
+'''Asks the user to login. If the user does not have an account, it asks the user if they would like to create one. 
+If the user is an admin, it sets the admin variable to True. Runs in response to the check_user() function.'''
+def login():
+    global admin
+    result = double_input("Username", "Password", )
+    if result == None:
+        exit()
+    file = open("TXT\\username_password.txt", "r")
+    file2 = open("TXT\\admin_username_password.txt", "r")
+    contents = file.read()
+    contents2 = file2.read()
+    if result not in contents and result not in contents2:
+        b = buttons("Incorrect Username or Password. Would you like to create a new account?", button_options=["Yes", "No"])
+        if b == None:
+            exit()
+        if b == "Yes":
+            r = double_input("New Username", "New Password", "New User")
+            file = open("TXT\\username_password.txt", "a")
+            file.write('\n' + r)
+            file.close()
+        if b == "No":
+            login()
+    if result in contents:
+        pass
+    if result in contents2:
+        admin = True
+        pass
     file.close()
-    r = double_input("New Admin Username", "New Admin Password", "New Admin Credentials")
-    file = open("TXT\\admin_username_password.txt", "a")
-    file.write('\n' + r)
-    file.close()
+
+# Check for Users:
+'''Checks to see if there are any users. If there are none, it asks the user to create a user account.'''
+def check_user():
+    if path.getsize("TXT\\username_password.txt") != 0 and path.getsize("TXT\\admin_username_password.txt") != 0:
+        login()
+    if path.getsize("TXT\\username_password.txt") == 0 and path.getsize("TXT\\admin_username_password.txt") != 0:
+        login()
+    if path.getsize("TXT\\username_password.txt") != 0 and path.getsize("TXT\\admin_username_password.txt") == 0:
+        message("There are no Admin users. Please create an Admin user account.")
+        r = double_input("New Admin Username", "New Admin Password", "New Admin Credentials")
+        file = open("TXT\\admin_username_password.txt", "a")
+        file.write('\n' + r)
+        file.close()
+    if path.getsize("TXT\\username_password.txt") == 0 and path.getsize("TXT\\admin_username_password.txt") == 0:
+        message("There are no Admin users. Please create an Admin user account.")
+        r = double_input("New Admin Username", "New Admin Password", "New Admin Credentials")
+        file = open("TXT\\admin_username_password.txt", "a")
+        file.write('\n' + r)
+        file.close()
+check_user()
 
 # Commands List:
 '''Prints a list of all the commands to the console.'''
