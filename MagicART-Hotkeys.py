@@ -21,54 +21,6 @@ try:
 except Exception as e:
     message(f"Whoops: {e}")
 
-def login():
-    global admin
-    result = double_input("Username", "Password", )
-    if result == None:
-        exit()
-    file = open("TXT\\username_password.txt", "r")
-    file2 = open("TXT\\admin_username_password.txt", "r")
-    contents = file.read()
-    contents2 = file2.read()
-    if result not in contents and result not in contents2:
-        b = buttons("Incorrect Username or Password. Would you like to create a new account?", button_options=["Yes", "No"])
-        if b == None:
-            exit()
-        if b == "Yes":
-            r = double_input("New Username", "New Password", "New User")
-            file = open("TXT\\username_password.txt", "a")
-            file.write('\n' + r)
-            file.close()
-        if b == "No":
-            login()
-    if result in contents:
-        pass
-    if result in contents2:
-        admin = True
-        pass
-    file.close()
-
-# Check for Users:
-'''Checks to see if there are any users. If there are none, it asks the user to create a user account.'''
-def check_user():
-    if path.getsize("TXT\\username_password.txt") != 0 and path.getsize("TXT\\admin_username_password.txt") != 0:
-        login()
-    if path.getsize("TXT\\username_password.txt") == 0 and path.getsize("TXT\\admin_username_password.txt") != 0:
-        login()
-    if path.getsize("TXT\\username_password.txt") != 0 and path.getsize("TXT\\admin_username_password.txt") == 0:
-        message("There are no Admin users. Please create an Admin user account.")
-        r = double_input("New Admin Username", "New Admin Password", "New Admin Credentials")
-        file = open("TXT\\admin_username_password.txt", "a")
-        file.write('\n' + r)
-        file.close()
-    if path.getsize("TXT\\username_password.txt") == 0 and path.getsize("TXT\\admin_username_password.txt") == 0:
-        message("There are no Admin users. Please create an Admin user account.")
-        r = double_input("New Admin Username", "New Admin Password", "New Admin Credentials")
-        file = open("TXT\\admin_username_password.txt", "a")
-        file.write('\n' + r)
-        file.close()
-check_user()
-
 # Global Variables:
 is_alive = True
 awake = True
@@ -171,7 +123,7 @@ def admin_commands(input_function):
         if admin:
             input_function()
         if not admin:
-            r = buttons("You must have Administrator Privileges to use this command. \n \n Sign in as Admin?",
+            r = buttons("You must have Administrator Privileges to use this command. \n \n Enter Admin credentials?",
                         button_options=["Yes", "No"])
             if r == "Yes":
                 r = double_input("Admin Username", "Admin Password")
@@ -276,24 +228,18 @@ def open_MagicArt():
 @commands_on_off
 @admin_commands
 def open_Spotify():
-# open Spotify application
     startfile(r"C:\Users\rcherveny\AppData\Roaming\Spotify\Spotify.exe")
-# open bluetooth options
     click_if_exists("PNG\\Bluetooth.png", region=(1657, 980, 1846, 1079))
     sleep(0.5)
-# opens bluetooth and other devices page
     click_if_exists("PNG\\Show Bluetooth devices.png",
                     region=(1684, 856, 1904, 1044))
-    sleep(1.5)\
-        # check if joe's airpods are connected
+    sleep(1.5)
     connected = found('PNG\\Bluetooth connected.png', region=(694, 6, 1878, 921)) or found(
         'PNG\\Bluetooth connected 2.png', region=(694, 6, 1878, 921))
-# if not connected, gives the option to connect
     if not connected:
         r = buttons("No devices connected. Try connecting?",
                     button_options=['Yes', 'No'])
         if r == 'Yes':
-            # tries to connect to joe's airpods, if not connected after 20 seconds, gives up
             search_and_click(
                 'PNG\\Bluetooth not connected.png', region=(694, 6, 1878, 921))
             timeout = 20
@@ -311,10 +257,8 @@ def open_Spotify():
             if time() > timeout_start + timeout:
                 message("Sorry, I couldn't connect any devices...")
                 return None
-# does not try to connect if the user says no
         if r == 'No':
             message("No devices connected")
-# if connected, messages the status and exits the bluetooth page
     if connected:
         message("Bluetooth Connected")
         click_if_exists('PNG\\exit bluetooth.png',
@@ -323,8 +267,10 @@ def open_Spotify():
 
 '''Checks if the user is an admin and alerts them if they are not.'''
 def admin_login():
+    global admin
     chadmin = Users().check_if_admin()
     if chadmin:
+        admin = True
         message("Login Successful")
     else:
         message("Login Failed")
