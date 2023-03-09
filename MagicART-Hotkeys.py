@@ -1,5 +1,7 @@
 # Imports:
 import random
+import threading
+import shutil
 from time import sleep, time
 from os import startfile, system, path
 from webbrowser import open as webopen
@@ -9,7 +11,8 @@ from pyautogui import hotkey, moveTo
 from pyperclip import copy
 from subprocess import call
 from input_boxes import message, buttons, double_input
-from win32gui import MoveWindow, FindWindow
+from win32gui import MoveWindow, FindWindow, SetWindowPos
+from win32con import HWND_TOPMOST, HWND_NOTOPMOST
 from tendo.singleton import SingleInstance
 
 # Startup Process:
@@ -27,6 +30,8 @@ awake = True
 keyboard_command = True
 complete = False
 admin = False
+progress = 0
+lock = threading.Lock()
 
 # Login:
 '''Asks the user to login. If the user does not have an account, it asks the user if they would like to create one. 
@@ -81,8 +86,19 @@ check_user()
 
 # Commands List:
 '''Prints a list of all the commands to the console.'''
-print("F2: Go to 925 template\nF3: Go to 10K template\nF4: Go to 14K template\nF5: Go to Logos template\nF6: Open Toolbar\nF7: Hotkeys List\nF11: Close MagicART\nF12: Open MagicART\nCtrl + Shift: Horizontal Allignment\nCtrl + Alt: Center Allignment\nAlt + `: Toggle Keyboard Commands\n\n----------------------------------------------")
-
+print("F2: Go to 925 template")
+print("F3: Go to 10K template")
+print("F4: Go to 14K template")
+print("F5: Go to Logos template")
+print("F6: Open Toolbar")
+print("F7: Hotkeys List")
+print("F11: Close MagicART")
+print("F12: Open MagicART")
+print("Ctrl + Shift: Horizontal Alignment")
+print("Ctrl + Alt: Center Alignment")
+print("Alt + `: Toggle Keyboard Commands")
+print(f"admin: {admin}")
+print("----------------------------------------------")
 
 # Lists:
 template_list = [
@@ -101,6 +117,9 @@ sleeplist = [
     "Stay awake...",
     "Can't sleep yet...",
     "So tired..."]
+progress = [
+    1, 2, 3, 4, 5
+]
 
 
 # Wrappers:
@@ -151,9 +170,12 @@ class Users(object):
     '''Creates a new user account.'''
     def add_user(self):
         r = double_input("Enter New Username", "Enter New Password")
-        file = open('TXT\\username_password.txt', "a")
-        file.write('\n' + r)
-        file.close()
+        if r == None:
+            return
+        else:
+            file = open('TXT\\username_password.txt', "a")
+            file.write('\n' + r)
+            file.close()
 
     '''Checks if the user is an admin.'''
     def check_if_admin(self):
@@ -187,18 +209,52 @@ class Users(object):
 
 
 # Functions:
+
+def prog_bar(text=None):
+    progress = 0
+    print(text)
+    term_width, _ = shutil.get_terminal_size(fallback=(80, 24))
+    bar_width = term_width - len(f"[ 100% ] ")
+    bar = "[" + "=" * int(progress / (100 / (bar_width - 2))) + " " * (bar_width - int(progress / (100 / (bar_width - 2))) - 2) + "]"
+    print(f"\r{bar} {progress}%", end="", flush=True)
+
+def update_prog_bar(start, stop):
+    start = round(start)
+    stop = round(stop)
+    progress = start
+    term_width, _ = shutil.get_terminal_size(fallback=(80, 24))
+    bar_width = term_width - len(f"[ 100% ] ")
+    while progress <= stop:
+        bar = "[" + "=" * int(progress / (100 / (bar_width - 2))) + " " * (bar_width - int(progress / (100 / (bar_width - 2))) - 2) + "]"
+        print(f"\r{bar} {progress}%", end="", flush=True)
+        progress += 1
+        sleep(0.15)
+
+
 '''Opens MagicART and all the necessary templates.'''
 @commands_on_off
 def open_MagicArt():
-    moveTo(1300, 1079)
-    startfile(r"C:\Program Files (x86)\MagicART 5\MagicART.exe")
-    found_pin = search_and_click("PNG\\object property pin.png", timeout=6, region=(164, 46, 380, 213))
+    hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
+    SetWindowPos(hwnd, HWND_TOPMOST, -7, 750, 407, 300, 0)
+    prog_bar("Opening MagicART\nDO NOT MOVE THE MOUSE")
+    threading.Thread(target=update_prog_bar, args=(0, 2.13)).start()
+    moveTo(1300, 1079) 
+
+    threading.Thread(target=update_prog_bar, args=(2.13, 4.26)).start()
+    startfile(r"C:\Program Files (x86)\MagicART 5\MagicART.exe") 
+
+    threading.Thread(target=update_prog_bar, args=(4.26, 12.78)).start()
+    found_pin = search_and_click("PNG\\object property pin.png", timeout=6, region=(164, 46, 380, 213)) 
     if not found_pin:
-        click_if_exists("PNG\\open magicart.png", region=(827, 971, 1005, 1079)) or click_if_exists("PNG\\highlighted open magicart.png", region=(827, 971, 1005, 1079))
-        search_and_click("PNG\\object property pin.png", region=(164, 46, 380, 213))
-        click_if_exists("PNG\\fullscreen.png")
+        click_if_exists("PNG\\open magicart.png", region=(827, 971, 1005, 1079)) or click_if_exists("PNG\\highlighted open magicart.png", region=(827, 971, 1005, 1079)) 
+        search_and_click("PNG\\object property pin.png", region=(164, 46, 380, 213)) 
+        click_if_exists("PNG\\fullscreen.png") 
+
+    threading.Thread(target=update_prog_bar, args=(12.78, 14.91)).start()
     found_connected = find("PNG\\engraver connected.png", timeout=3, region=(1717, 62, 1916, 242)) or find(
-        "PNG\\engraver connected 2.png", region=(1717, 62, 1916, 242))
+        "PNG\\engraver connected 2.png", region=(1717, 62, 1916, 242)) 
+    
+
     if not found_connected:
         call("taskkill /f /im MagicART.exe")
         r = buttons("Engraver not connected! \n Try again?", button_options=["Yes", "No"])
@@ -206,23 +262,34 @@ def open_MagicArt():
             open_MagicArt()
         if r == "No":
             return None
-    for i in template_list:
-        copy(i)
+        
+    threading.Thread(target=update_prog_bar, args=(14.91, 63.9)).start()
+    for i in template_list: 
+        copy(i) 
         hotkey("ctrl", "o")
         sleep(0.5)
         hotkey("ctrl", "v")
         hotkey("enter")
         sleep(0.7)
+    with lock:
+        progress = 63.9
+
+    threading.Thread(target=update_prog_bar, args=(63.9, 66)).start()
     click_if_exists("PNG\\fit to page.png", region=(332, 927, 519, 1028))
     sleep(0.5)
     click_if_exists("PNG\\10%.png", region=(371, 802, 524, 998))
+
+    threading.Thread(target=update_prog_bar, args=(66, 100)).start()
     for j in zoom_list:
         click_if_exists(j, region=(150, 64, 853, 128))
         click_if_exists("PNG\\fit to page.png",
                         region=(332, 927, 519, 1028))
         click_if_exists("PNG\\15%.png", region=(371, 802, 524, 998))
     click_if_exists("PNG\\object property pin.png", region=(164, 46, 380, 213))
-
+    hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
+    SetWindowPos(hwnd, HWND_NOTOPMOST, -7, 750, 407, 300, 0)
+    click_if_exists("PNG\\Terminal window.png")
+    bclick(1300, 0)
 
 '''Opens Spotify and connects to Joe's Airpods.'''
 @commands_on_off
@@ -274,18 +341,38 @@ def admin_login():
         message("Login Successful")
     else:
         message("Login Failed")
+        
+
+def change_username_password():
+    r = double_input("Please enter your current username and password.\n\nUsername", "Password")
+    if r == None:
+        user_settings()
+    n = double_input("Please enter your new username and password.\n(Note: these credentials will need to be\nelevated to gain admin privileges)\n\nNew Username", "New Password")
+    if n == None:
+        user_settings()
+    with open("TXT\\username_password.txt", "r") as file1, open("TXT\\admin_username_password.txt", "r") as file2:
+        lines1 = file1.readlines()
+        lines2 = file2.readlines()
+
+    with open("TXT\\username_password.txt", "w") as new_file, open("TXT\\admin_username_password.txt", "w") as new_file2:
+        for line in lines1:
+            if line.strip("\n") != r:
+                new_file.write(line)
+        for line in lines2:
+            if line.strip("\n") != r:
+                new_file2.write(line)
 
 
 '''Gives multiple functions that deal with user accounts and privileges.'''
-@admin_commands
 @commands_on_off
 def user_settings():
     selection = buttons('', 'User Settings', button_options=[
-                        'Add User', 'Make Admin', 'Admin Login'])
+                        'Add User', 'Make Admin', 'Admin Login', 'Change Username and Password'])
     selection_to_function = {
         'Add User': lambda: Users().add_user(),
-        'Make Admin': lambda: Users().make_admin(),
+        'Make Admin': admin_commands(lambda: Users().make_admin()),
         'Admin Login': admin_login,
+        'Change Username and Password': change_username_password
     }
     if selection in selection_to_function:
         selection_to_function[selection]()
@@ -387,6 +474,8 @@ start_checking_hotkeys()
 register_hotkeys(bindings)
 while awake:
     # pick a random phrase from the sleeplist to print, then sleep for 5 minutes and press f15
-    print(random.choice(sleeplist))
-    hotkey("F15")
     sleep(60 * 5)
+    print("\n" + random.choice(sleeplist) + "\n")
+    hotkey("F15")
+
+
