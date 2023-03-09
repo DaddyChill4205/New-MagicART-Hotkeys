@@ -393,9 +393,10 @@ def engraving_documents():
 @commands_on_off
 def open_toolbar():
     selection = buttons('', 'Toolbar', button_options=[
-                        'Workday', 'SKU Search', 'Engraving Documents', 'Spotify', 'Calculator', 'User Settings', 'Shutdown'])
+                        'Workday', 'ChatGPT', 'SKU Search', 'Engraving Documents', 'Spotify', 'Calculator', 'User Settings', 'Shutdown'])
     selection_to_function = {
         'Workday': lambda: webopen(f"https://www.myworkday.com/wday/authgwy/signetjewelers/login.htmld"),
+        'ChatGPT': lambda: webopen(f"https://chat.openai.com/chat"),
         'SKU Search': lambda: startfile('sku_search.py'),
         'Engraving Documents': engraving_documents,
         'Spotify': open_Spotify,
@@ -405,6 +406,8 @@ def open_toolbar():
     }
     if selection in selection_to_function:
         selection_to_function[selection]()
+    if selection == None:
+        return
 
 
 '''Toggles the keyboard commands on and off.'''
