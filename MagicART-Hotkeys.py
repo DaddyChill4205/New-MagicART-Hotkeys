@@ -1,7 +1,7 @@
 # Imports:
 import random
-import threading
-import shutil
+from threading import Thread
+from shutil import get_terminal_size
 from time import sleep, time
 from os import startfile, system, path
 from webbrowser import open as webopen
@@ -31,7 +31,6 @@ keyboard_command = True
 complete = False
 admin = False
 progress = 0
-lock = threading.Lock()
 
 # Login:
 '''Asks the user to login. If the user does not have an account, it asks the user if they would like to create one. 
@@ -159,6 +158,34 @@ def admin_commands(input_function):
                 pass
     return wrapper
 
+def timing_decorator(func):
+    def wrapper(*args, **kwargs):
+        start_time = time()
+        result = func(*args, **kwargs)
+        end_time = time()
+        elapsed_time = end_time - start_time
+        print(f"\n{func.__name__} took {elapsed_time:.4f} seconds to complete.")
+        with open(f"{func.__name__}.txt", "a") as f:
+            t = (f"{elapsed_time: .4f}")
+            f.write(t + "\n")
+        with open(f"{func.__name__}.txt", "r") as f:
+            numbers = []
+            for line in f:
+                try:
+                    number = float(line.strip())
+                    numbers.append(number)
+                except ValueError:
+                    pass
+            try:
+                average = sum(numbers) / len(numbers)
+                print(f"\nThe average time for {func.__name__} is:", average)
+            except ZeroDivisionError as z:
+                pass
+        with open(f"average_{func.__name__}.txt", "w") as f:
+            average = str(average)
+            f.write(average)
+        return result
+    return wrapper
 
 # Classes:
 '''Gives multiple functions that deal with user accounts and privileges.'''
@@ -210,51 +237,51 @@ class Users(object):
 
 # Functions:
 
-def prog_bar(text=None):
+def progress_bar(filename, average_time):
+    start_time = time()
     progress = 0
-    print(text)
-    term_width, _ = shutil.get_terminal_size(fallback=(80, 24))
+    term_width, _ = get_terminal_size(fallback=(80, 24))
     bar_width = term_width - len(f"[ 100% ] ")
-    bar = "[" + "=" * int(progress / (100 / (bar_width - 2))) + " " * (bar_width - int(progress / (100 / (bar_width - 2))) - 2) + "]"
-    print(f"\r{bar} {progress}%", end="", flush=True)
-
-def update_prog_bar(start, stop):
-    start = round(start)
-    stop = round(stop)
-    progress = start
-    term_width, _ = shutil.get_terminal_size(fallback=(80, 24))
-    bar_width = term_width - len(f"[ 100% ] ")
-    while progress <= stop:
-        bar = "[" + "=" * int(progress / (100 / (bar_width - 2))) + " " * (bar_width - int(progress / (100 / (bar_width - 2))) - 2) + "]"
+    while progress <= 100:
+        bar = "[" + "=" * int(progress / (100 / (bar_width))) + " " * (bar_width - int(progress / (100 / (bar_width)))) + "]"
         print(f"\r{bar} {progress}%", end="", flush=True)
         progress += 1
-        sleep(0.15)
+        elapsed_time = time() - start_time
+        remaining_time = average_time - elapsed_time
+        if remaining_time > 0 and progress < 100:
+            sleep_time = remaining_time / (100 - progress)
+            sleep(sleep_time)
+
+def get_average_time(filename):
+    with open(filename, "r") as f:
+        file_content = f.read().strip()
+        if path.getsize(filename) == 0:
+            return  
+        else:
+            return float(file_content)
 
 
 '''Opens MagicART and all the necessary templates.'''
 @commands_on_off
+@timing_decorator
 def open_MagicArt():
-    hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
-    SetWindowPos(hwnd, HWND_TOPMOST, -7, 750, 407, 300, 0)
-    prog_bar("Opening MagicART\nDO NOT MOVE THE MOUSE")
-    threading.Thread(target=update_prog_bar, args=(0, 2.13)).start()
+    try:
+        hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
+        SetWindowPos(hwnd, HWND_TOPMOST, -7, 750, 407, 300, 0)
+    except Exception as e:
+        message(f"Whoops: {e}")
+    filename = "average_open_MagicArt.txt"
+    Thread(target=progress_bar, args=(filename, get_average_time(filename))).start()
+
     moveTo(1300, 1079) 
-
-    threading.Thread(target=update_prog_bar, args=(2.13, 4.26)).start()
     startfile(r"C:\Program Files (x86)\MagicART 5\MagicART.exe") 
-
-    threading.Thread(target=update_prog_bar, args=(4.26, 12.78)).start()
     found_pin = search_and_click("PNG\\object property pin.png", timeout=6, region=(164, 46, 380, 213)) 
     if not found_pin:
         click_if_exists("PNG\\open magicart.png", region=(827, 971, 1005, 1079)) or click_if_exists("PNG\\highlighted open magicart.png", region=(827, 971, 1005, 1079)) 
         search_and_click("PNG\\object property pin.png", region=(164, 46, 380, 213)) 
         click_if_exists("PNG\\fullscreen.png") 
-
-    threading.Thread(target=update_prog_bar, args=(12.78, 14.91)).start()
     found_connected = find("PNG\\engraver connected.png", timeout=3, region=(1717, 62, 1916, 242)) or find(
         "PNG\\engraver connected 2.png", region=(1717, 62, 1916, 242)) 
-    
-
     if not found_connected:
         call("taskkill /f /im MagicART.exe")
         r = buttons("Engraver not connected! \n Try again?", button_options=["Yes", "No"])
@@ -262,8 +289,6 @@ def open_MagicArt():
             open_MagicArt()
         if r == "No":
             return None
-        
-    threading.Thread(target=update_prog_bar, args=(14.91, 63.9)).start()
     for i in template_list: 
         copy(i) 
         hotkey("ctrl", "o")
@@ -271,23 +296,21 @@ def open_MagicArt():
         hotkey("ctrl", "v")
         hotkey("enter")
         sleep(0.7)
-    with lock:
-        progress = 63.9
-
-    threading.Thread(target=update_prog_bar, args=(63.9, 66)).start()
     click_if_exists("PNG\\fit to page.png", region=(332, 927, 519, 1028))
     sleep(0.5)
     click_if_exists("PNG\\10%.png", region=(371, 802, 524, 998))
-
-    threading.Thread(target=update_prog_bar, args=(66, 100)).start()
     for j in zoom_list:
         click_if_exists(j, region=(150, 64, 853, 128))
         click_if_exists("PNG\\fit to page.png",
                         region=(332, 927, 519, 1028))
         click_if_exists("PNG\\15%.png", region=(371, 802, 524, 998))
     click_if_exists("PNG\\object property pin.png", region=(164, 46, 380, 213))
-    hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
-    SetWindowPos(hwnd, HWND_NOTOPMOST, -7, 750, 407, 300, 0)
+
+    try:
+        hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
+        SetWindowPos(hwnd, HWND_NOTOPMOST, -7, 750, 407, 300, 0)
+    except Exception as e:
+        message(f"Whoops: {e}")
     click_if_exists("PNG\\Terminal window.png")
     bclick(1300, 0)
 
@@ -392,22 +415,25 @@ def engraving_documents():
 '''Opens a toolbar with common automated tasks.'''
 @commands_on_off
 def open_toolbar():
-    selection = buttons('', 'Toolbar', button_options=[
-                        'Workday', 'ChatGPT', 'SKU Search', 'Engraving Documents', 'Spotify', 'Calculator', 'User Settings', 'Shutdown'])
-    selection_to_function = {
-        'Workday': lambda: webopen(f"https://www.myworkday.com/wday/authgwy/signetjewelers/login.htmld"),
-        'ChatGPT': lambda: webopen(f"https://chat.openai.com/chat"),
-        'SKU Search': lambda: startfile('sku_search.py'),
-        'Engraving Documents': engraving_documents,
-        'Spotify': open_Spotify,
-        'Calculator': lambda: system("calc"),
-        'User Settings': user_settings,
-        'Shutdown': shut_down_computer
-    }
-    if selection in selection_to_function:
-        selection_to_function[selection]()
-    if selection == None:
-        return
+    try:
+        selection = buttons('', 'Toolbar', button_options=[
+                            'Workday', 'ChatGPT', 'SKU Search', 'Engraving Documents', 'Spotify', 'Calculator', 'User Settings', 'Shutdown'])
+        selection_to_function = {
+            'Workday': lambda: webopen(f"https://www.myworkday.com/wday/authgwy/signetjewelers/login.htmld"),
+            'ChatGPT': lambda: webopen(f"https://chat.openai.com/chat"),
+            'SKU Search': lambda: startfile('sku_search.py'),
+            'Engraving Documents': engraving_documents,
+            'Spotify': open_Spotify,
+            'Calculator': lambda: system("calc"),
+            'User Settings': user_settings,
+            'Shutdown': shut_down_computer
+        }
+        if selection in selection_to_function:
+            selection_to_function[selection]()
+        if selection == None:
+            return
+    except AttributeError as a:
+        pass
 
 
 '''Toggles the keyboard commands on and off.'''
