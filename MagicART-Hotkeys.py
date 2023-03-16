@@ -1,6 +1,6 @@
 # Imports:
 import random
-from threading import Thread
+from threading import Thread, Event
 from shutil import get_terminal_size
 from time import sleep, time
 from os import startfile, system, path
@@ -31,6 +31,7 @@ keyboard_command = True
 complete = False
 admin = False
 progress = 0
+loading_event = Event()
 
 # Login:
 '''Asks the user to login. If the user does not have an account, it asks the user if they would like to create one. 
@@ -116,9 +117,9 @@ sleeplist = [
     "Stay awake...",
     "Can't sleep yet...",
     "So tired..."]
-progress = [
-    1, 2, 3, 4, 5
-]
+
+loading_list = [
+    ".   ", "..  ", "... ", "...."]
 
 
 # Wrappers:
@@ -164,11 +165,10 @@ def timing_decorator(func):
         result = func(*args, **kwargs)
         end_time = time()
         elapsed_time = end_time - start_time
-        print(f"\n{func.__name__} took {elapsed_time:.4f} seconds to complete.")
-        with open(f"{func.__name__}.txt", "a") as f:
+        with open(f"TXT\\{func.__name__}.txt", "a") as f:
             t = (f"{elapsed_time: .4f}")
             f.write(t + "\n")
-        with open(f"{func.__name__}.txt", "r") as f:
+        with open(f"TXT\\{func.__name__}.txt", "r") as f:
             numbers = []
             for line in f:
                 try:
@@ -178,10 +178,11 @@ def timing_decorator(func):
                     pass
             try:
                 average = sum(numbers) / len(numbers)
+                print(f"\n{func.__name__} took {elapsed_time:.4f} seconds to complete.")
                 print(f"\nThe average time for {func.__name__} is:", average)
             except ZeroDivisionError as z:
                 pass
-        with open(f"average_{func.__name__}.txt", "w") as f:
+        with open(f"TXT\\average_{func.__name__}.txt", "w") as f:
             average = str(average)
             f.write(average)
         return result
@@ -237,11 +238,12 @@ class Users(object):
 
 # Functions:
 
-def progress_bar(filename, average_time):
+def progress_bar(text, average_time):
     start_time = time()
     progress = 0
     term_width, _ = get_terminal_size(fallback=(80, 24))
     bar_width = term_width - len(f"[ 100% ] ")
+    print(text)
     while progress <= 100:
         bar = "[" + "=" * int(progress / (100 / (bar_width))) + " " * (bar_width - int(progress / (100 / (bar_width)))) + "]"
         print(f"\r{bar} {progress}%", end="", flush=True)
@@ -259,6 +261,24 @@ def get_average_time(filename):
             return  
         else:
             return float(file_content)
+        
+def check_loading():
+    return not loading_event.is_set()
+
+def loading_bar():
+    while check_loading():
+        for i in loading_list:
+            print(f"\rLoading{i}", end="", flush=True)
+            sleep(0.4)
+            if not check_loading():
+                break
+
+def loading_bar_done():
+    loading_event.set()
+    loading_thread.join()
+    print("\rLoading....Done!", end="", flush=True)
+
+loading_thread = Thread(target=loading_bar)
 
 
 '''Opens MagicART and all the necessary templates.'''
@@ -270,8 +290,8 @@ def open_MagicArt():
         SetWindowPos(hwnd, HWND_TOPMOST, -7, 750, 407, 300, 0)
     except Exception as e:
         message(f"Whoops: {e}")
-    filename = "average_open_MagicArt.txt"
-    Thread(target=progress_bar, args=(filename, get_average_time(filename))).start()
+    filename = "TXT\\average_open_MagicArt.txt"
+    Thread(target=progress_bar, args=("Opening MagicArt...\nDO NOT MOVE THE MOUSE", get_average_time(filename))).start()
 
     moveTo(1300, 1079) 
     startfile(r"C:\Program Files (x86)\MagicART 5\MagicART.exe") 
@@ -317,13 +337,16 @@ def open_MagicArt():
 '''Opens Spotify and connects to Joe's Airpods.'''
 @commands_on_off
 @admin_commands
+@timing_decorator
 def open_Spotify():
+    loading_thread.start()
     startfile(r"C:\Users\rcherveny\AppData\Roaming\Spotify\Spotify.exe")
     click_if_exists("PNG\\Bluetooth.png", region=(1657, 980, 1846, 1079))
     sleep(0.5)
     click_if_exists("PNG\\Show Bluetooth devices.png",
                     region=(1684, 856, 1904, 1044))
     sleep(1.5)
+    loading_bar_done()
     connected = found('PNG\\Bluetooth connected.png', region=(694, 6, 1878, 921)) or found(
         'PNG\\Bluetooth connected 2.png', region=(694, 6, 1878, 921))
     if not connected:
