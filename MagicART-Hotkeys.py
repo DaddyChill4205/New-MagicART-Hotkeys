@@ -22,7 +22,7 @@ try:
     hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
     MoveWindow(hwnd, -7, 750, 407, 300, True)
 except Exception as e:
-    message(f"Whoops: {e}")
+    pass
 
 # Global Variables:
 is_alive = True
@@ -32,6 +32,7 @@ complete = False
 admin = False
 progress = 0
 loading_event = Event()
+dont_move = False
 
 # Login:
 '''Asks the user to login. If the user does not have an account, it asks the user if they would like to create one. 
@@ -41,16 +42,20 @@ def login():
     result = double_input("Username", "Password", )
     if result == None:
         exit()
+    if result == " ":
+        exit()
     file = open("TXT\\username_password.txt", "r")
     file2 = open("TXT\\admin_username_password.txt", "r")
-    contents = file.read()
-    contents2 = file2.read()
+    contents = file.readlines()
+    contents2 = file2.readlines()
     if result not in contents and result not in contents2:
         b = buttons("Incorrect Username or Password. Would you like to create a new account?", button_options=["Yes", "No"])
         if b == None:
             exit()
         if b == "Yes":
             r = double_input("New Username", "New Password", "New User")
+            if r == None:
+                exit()
             file = open("TXT\\username_password.txt", "a")
             file.write('\n' + r)
             file.close()
@@ -84,6 +89,13 @@ def check_user():
         file.close()
 check_user()
 
+def is_admin():
+    global admin
+    if admin:
+        print("You are an Admin.")
+    else:
+        print("You are not an Admin.")
+
 # Commands List:
 '''Prints a list of all the commands to the console.'''
 print("F2: Go to 925 template")
@@ -97,7 +109,7 @@ print("F12: Open MagicART")
 print("Ctrl + Shift: Horizontal Alignment")
 print("Ctrl + Alt: Center Alignment")
 print("Alt + `: Toggle Keyboard Commands")
-print(f"admin: {admin}")
+is_admin()
 print("----------------------------------------------")
 
 # Lists:
@@ -161,6 +173,7 @@ def admin_commands(input_function):
 
 def timing_decorator(func):
     def wrapper(*args, **kwargs):
+        global dont_move
         start_time = time()
         result = func(*args, **kwargs)
         end_time = time()
@@ -176,12 +189,15 @@ def timing_decorator(func):
                     numbers.append(number)
                 except ValueError:
                     pass
-            try:
-                average = sum(numbers) / len(numbers)
-                print(f"\n{func.__name__} took {elapsed_time:.4f} seconds to complete.")
-                print(f"\nThe average time for {func.__name__} is:", average)
-            except ZeroDivisionError as z:
-                pass
+            while dont_move == True:
+                sleep(0.1)
+            if dont_move == False:
+                try:
+                    average = sum(numbers) / len(numbers)
+                    print(f"\n{func.__name__} took {elapsed_time:.4f} sec to complete.")
+                    print(f"The average time for {func.__name__} is:{average}\n")
+                except ZeroDivisionError as z:
+                    pass
         with open(f"TXT\\average_{func.__name__}.txt", "w") as f:
             average = str(average)
             f.write(average)
@@ -239,12 +255,14 @@ class Users(object):
 # Functions:
 
 def progress_bar(text, average_time):
+    global dont_move
     start_time = time()
     progress = 0
     term_width, _ = get_terminal_size(fallback=(80, 24))
     bar_width = term_width - len(f"[ 100% ] ")
     print(text)
     while progress <= 100:
+        dont_move = True
         bar = "[" + "=" * int(progress / (100 / (bar_width))) + " " * (bar_width - int(progress / (100 / (bar_width)))) + "]"
         print(f"\r{bar} {progress}%", end="", flush=True)
         progress += 1
@@ -253,6 +271,7 @@ def progress_bar(text, average_time):
         if remaining_time > 0 and progress < 100:
             sleep_time = remaining_time / (100 - progress)
             sleep(sleep_time)
+    dont_move = False
 
 def get_average_time(filename):
     with open(filename, "r") as f:
@@ -289,7 +308,7 @@ def open_MagicArt():
         hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
         SetWindowPos(hwnd, HWND_TOPMOST, -7, 750, 407, 300, 0)
     except Exception as e:
-        message(f"Whoops: {e}")
+        pass
     filename = "TXT\\average_open_MagicArt.txt"
     Thread(target=progress_bar, args=("Opening MagicArt...\nDO NOT MOVE THE MOUSE", get_average_time(filename))).start()
 
@@ -330,16 +349,22 @@ def open_MagicArt():
         hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
         SetWindowPos(hwnd, HWND_NOTOPMOST, -7, 750, 407, 300, 0)
     except Exception as e:
-        message(f"Whoops: {e}")
+        pass
     click_if_exists("PNG\\Terminal window.png")
     bclick(1300, 0)
 
 '''Opens Spotify and connects to Joe's Airpods.'''
 @commands_on_off
 @admin_commands
-@timing_decorator
 def open_Spotify():
+    try:
+        hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
+        SetWindowPos(hwnd, HWND_TOPMOST, -7, 750, 407, 300, 0)
+    except Exception as e:
+        pass
     loading_thread.start()
+
+    global dont_move
     startfile(r"C:\Users\rcherveny\AppData\Roaming\Spotify\Spotify.exe")
     click_if_exists("PNG\\Bluetooth.png", region=(1657, 980, 1846, 1079))
     sleep(0.5)
@@ -347,6 +372,7 @@ def open_Spotify():
                     region=(1684, 856, 1904, 1044))
     sleep(1.5)
     loading_bar_done()
+
     connected = found('PNG\\Bluetooth connected.png', region=(694, 6, 1878, 921)) or found(
         'PNG\\Bluetooth connected 2.png', region=(694, 6, 1878, 921))
     if not connected:
@@ -376,6 +402,19 @@ def open_Spotify():
         message("Bluetooth Connected")
         click_if_exists('PNG\\exit bluetooth.png',
                         region=(1724, 0, 1886, 86))
+    
+    while dont_move == True:
+        pass
+    if dont_move == False:
+        try:
+            hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
+            SetWindowPos(hwnd, HWND_NOTOPMOST, -7, 750, 407, 300, 0)
+        except Exception as e:
+            pass
+        click_if_exists("PNG\\Terminal window.png")
+        home = click_if_exists("PNG\\Spotify home.png")
+        if not home:
+            bclick(1300, 0)
 
 
 '''Checks if the user is an admin and alerts them if they are not.'''
