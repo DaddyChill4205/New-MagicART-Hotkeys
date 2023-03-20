@@ -28,11 +28,10 @@ except Exception as e:
 is_alive = True
 awake = True
 keyboard_command = True
-complete = False
 admin = False
 progress = 0
-loading_event = Event()
 dont_move = False
+loading_permissions = False
 
 # Login:
 '''Asks the user to login. If the user does not have an account, it asks the user if they would like to create one. 
@@ -133,6 +132,9 @@ sleeplist = [
 loading_list = [
     ".   ", "..  ", "... ", "...."]
 
+done_list = [
+    "Loading....Done!", "Loading....     ", "Loading....Done!", "Loading....     ", "Loading....Done!\n"]
+
 
 # Wrappers:
 '''Checks if keyboard commands are on or off. If they are off, it will not run the command.'''
@@ -189,9 +191,9 @@ def timing_decorator(func):
                     numbers.append(number)
                 except ValueError:
                     pass
-            while dont_move == True:
+            while dont_move:
                 sleep(0.1)
-            if dont_move == False:
+            if not dont_move:
                 try:
                     average = sum(numbers) / len(numbers)
                     print(f"\n{func.__name__} took {elapsed_time:.4f} sec to complete.")
@@ -254,6 +256,23 @@ class Users(object):
 
 # Functions:
 
+def set_topmost():
+    try:
+        hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
+        SetWindowPos(hwnd, HWND_TOPMOST, -7, 750, 407, 300, 0)
+    except Exception as e:
+        pass
+
+def unset_topmost():
+    try:
+        hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
+        SetWindowPos(hwnd, HWND_NOTOPMOST, -7, 750, 407, 300, 0)
+    except Exception as e:
+        pass
+    bclick(60, 763)
+    sleep(0.3)
+    bclick(1300, 0)
+
 def progress_bar(text, average_time):
     global dont_move
     start_time = time()
@@ -280,35 +299,13 @@ def get_average_time(filename):
             return  
         else:
             return float(file_content)
-        
-def check_loading():
-    return not loading_event.is_set()
-
-def loading_bar():
-    while check_loading():
-        for i in loading_list:
-            print(f"\rLoading{i}", end="", flush=True)
-            sleep(0.4)
-            if not check_loading():
-                break
-
-def loading_bar_done():
-    loading_event.set()
-    loading_thread.join()
-    print("\rLoading....Done!", end="", flush=True)
-
-loading_thread = Thread(target=loading_bar)
 
 
 '''Opens MagicART and all the necessary templates.'''
 @commands_on_off
 @timing_decorator
 def open_MagicArt():
-    try:
-        hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
-        SetWindowPos(hwnd, HWND_TOPMOST, -7, 750, 407, 300, 0)
-    except Exception as e:
-        pass
+    set_topmost()
     filename = "TXT\\average_open_MagicArt.txt"
     Thread(target=progress_bar, args=("Opening MagicArt...\nDO NOT MOVE THE MOUSE", get_average_time(filename))).start()
 
@@ -345,33 +342,41 @@ def open_MagicArt():
         click_if_exists("PNG\\15%.png", region=(371, 802, 524, 998))
     click_if_exists("PNG\\object property pin.png", region=(164, 46, 380, 213))
 
-    try:
-        hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
-        SetWindowPos(hwnd, HWND_NOTOPMOST, -7, 750, 407, 300, 0)
-    except Exception as e:
-        pass
-    click_if_exists("PNG\\Terminal window.png")
-    bclick(1300, 0)
+    unset_topmost()
+
+
+def loading_bar():
+    global loading_permissions
+    loading_permissions = True
+    print("               ", end = "", flush=True)
+    while loading_permissions:
+        for l in loading_list:
+            print(f"\rLoading{l}", end="", flush=True)
+            sleep(0.4)
+
+def loading_bar_done():
+    global loading_permissions
+    loading_permissions = False
+    sleep(0.1)
+    for d in done_list:
+        print(f"\r{d}", end="", flush=True)
+        sleep(0.2)
+
 
 '''Opens Spotify and connects to Joe's Airpods.'''
 @commands_on_off
 @admin_commands
 def open_Spotify():
-    try:
-        hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
-        SetWindowPos(hwnd, HWND_TOPMOST, -7, 750, 407, 300, 0)
-    except Exception as e:
-        pass
-    loading_thread.start()
-
     global dont_move
+    set_topmost()
+    Thread(target=loading_bar).start()
+
     startfile(r"C:\Users\rcherveny\AppData\Roaming\Spotify\Spotify.exe")
     click_if_exists("PNG\\Bluetooth.png", region=(1657, 980, 1846, 1079))
     sleep(0.5)
     click_if_exists("PNG\\Show Bluetooth devices.png",
                     region=(1684, 856, 1904, 1044))
     sleep(1.5)
-    loading_bar_done()
 
     connected = found('PNG\\Bluetooth connected.png', region=(694, 6, 1878, 921)) or found(
         'PNG\\Bluetooth connected 2.png', region=(694, 6, 1878, 921))
@@ -392,29 +397,24 @@ def open_Spotify():
                     message("Bluetooth Connected")
                     click_if_exists('PNG\\exit bluetooth.png',
                                     region=(694, 6, 1878, 921))
+                    loading_bar_done()
+                    unset_topmost()
                     return None
             if time() > timeout_start + timeout:
                 message("Sorry, I couldn't connect any devices...")
+                loading_bar_done()
+                unset_topmost()
                 return None
         if r == 'No':
             message("No devices connected")
+            loading_bar_done()
+            unset_topmost()
     if connected:
         message("Bluetooth Connected")
         click_if_exists('PNG\\exit bluetooth.png',
                         region=(1724, 0, 1886, 86))
-    
-    while dont_move == True:
-        pass
-    if dont_move == False:
-        try:
-            hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
-            SetWindowPos(hwnd, HWND_NOTOPMOST, -7, 750, 407, 300, 0)
-        except Exception as e:
-            pass
-        click_if_exists("PNG\\Terminal window.png")
-        home = click_if_exists("PNG\\Spotify home.png")
-        if not home:
-            bclick(1300, 0)
+        loading_bar_done()
+        unset_topmost()
 
 
 '''Checks if the user is an admin and alerts them if they are not.'''
