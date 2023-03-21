@@ -10,7 +10,7 @@ from bot import click_if_exists, search_and_click, found, find, bclick
 from pyautogui import hotkey, moveTo
 from pyperclip import copy
 from subprocess import call
-from input_boxes import message, buttons, double_input
+from input_boxes import message, buttons, double_input, loading_bar, loading_bar_done
 from win32gui import MoveWindow, FindWindow, SetWindowPos
 from win32con import HWND_TOPMOST, HWND_NOTOPMOST
 from tendo.singleton import SingleInstance
@@ -20,7 +20,7 @@ from tendo.singleton import SingleInstance
 only_one = SingleInstance()
 try:
     hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
-    MoveWindow(hwnd, -7, 750, 407, 300, True)
+    MoveWindow(hwnd, -7, 748, 407, 300, True)
 except Exception as e:
     pass
 
@@ -31,11 +31,12 @@ keyboard_command = True
 admin = False
 progress = 0
 dont_move = False
-loading_permissions = False
 
 # Login:
 '''Asks the user to login. If the user does not have an account, it asks the user if they would like to create one. 
 If the user is an admin, it sets the admin variable to True. Runs in response to the check_user() function.'''
+
+
 def login():
     global admin
     result = double_input("Username", "Password", )
@@ -48,7 +49,8 @@ def login():
     contents = file.readlines()
     contents2 = file2.readlines()
     if result not in contents and result not in contents2:
-        b = buttons("Incorrect Username or Password. Would you like to create a new account?", button_options=["Yes", "No"])
+        b = buttons("Incorrect Username or Password. Would you like to create a new account?",
+                    button_options=["Yes", "No"])
         if b == None:
             exit()
         if b == "Yes":
@@ -67,8 +69,11 @@ def login():
         pass
     file.close()
 
+
 # Check for Users:
 '''Checks to see if there are any users. If there are none, it asks the user to create a user account.'''
+
+
 def check_user():
     if path.getsize("TXT\\username_password.txt") != 0 and path.getsize("TXT\\admin_username_password.txt") != 0:
         login()
@@ -76,17 +81,22 @@ def check_user():
         login()
     if path.getsize("TXT\\username_password.txt") != 0 and path.getsize("TXT\\admin_username_password.txt") == 0:
         message("There are no Admin users. Please create an Admin user account.")
-        r = double_input("New Admin Username", "New Admin Password", "New Admin Credentials")
+        r = double_input("New Admin Username",
+                         "New Admin Password", "New Admin Credentials")
         file = open("TXT\\admin_username_password.txt", "a")
         file.write('\n' + r)
         file.close()
     if path.getsize("TXT\\username_password.txt") == 0 and path.getsize("TXT\\admin_username_password.txt") == 0:
         message("There are no Admin users. Please create an Admin user account.")
-        r = double_input("New Admin Username", "New Admin Password", "New Admin Credentials")
+        r = double_input("New Admin Username",
+                         "New Admin Password", "New Admin Credentials")
         file = open("TXT\\admin_username_password.txt", "a")
         file.write('\n' + r)
         file.close()
+
+
 check_user()
+
 
 def is_admin():
     global admin
@@ -94,6 +104,7 @@ def is_admin():
         print("You are an Admin.")
     else:
         print("You are not an Admin.")
+
 
 # Commands List:
 '''Prints a list of all the commands to the console.'''
@@ -129,15 +140,10 @@ sleeplist = [
     "Can't sleep yet...",
     "So tired..."]
 
-loading_list = [
-    ".   ", "..  ", "... ", "...."]
-
-done_list = [
-    "Loading....Done!", "Loading....     ", "Loading....Done!", "Loading....     ", "Loading....Done!\n"]
-
-
 # Wrappers:
 '''Checks if keyboard commands are on or off. If they are off, it will not run the command.'''
+
+
 def commands_on_off(input_function):
     def wrapper():
         global keyboard_command
@@ -150,6 +156,8 @@ def commands_on_off(input_function):
 
 
 '''Checks if the user is an admin. If they are not, it will ask them to sign in as an admin.'''
+
+
 def admin_commands(input_function):
     def wrapper():
         global admin
@@ -172,6 +180,7 @@ def admin_commands(input_function):
             if r == "No":
                 pass
     return wrapper
+
 
 def timing_decorator(func):
     def wrapper(*args, **kwargs):
@@ -196,8 +205,10 @@ def timing_decorator(func):
             if not dont_move:
                 try:
                     average = sum(numbers) / len(numbers)
-                    print(f"\n{func.__name__} took {elapsed_time:.4f} sec to complete.")
-                    print(f"The average time for {func.__name__} is:{average}\n")
+                    print(
+                        f"\n{func.__name__} took {elapsed_time:.4f} sec to complete.")
+                    print(
+                        f"The average time for {func.__name__} is:{average}\n")
                 except ZeroDivisionError as z:
                     pass
         with open(f"TXT\\average_{func.__name__}.txt", "w") as f:
@@ -206,14 +217,19 @@ def timing_decorator(func):
         return result
     return wrapper
 
+
 # Classes:
 '''Gives multiple functions that deal with user accounts and privileges.'''
+
+
 class Users(object):
     global admin
+
     def __init__(self):
         self.admin = admin
 
     '''Creates a new user account.'''
+
     def add_user(self):
         r = double_input("Enter New Username", "Enter New Password")
         if r == None:
@@ -224,6 +240,7 @@ class Users(object):
             file.close()
 
     '''Checks if the user is an admin.'''
+
     def check_if_admin(self):
         r = double_input("Admin Username", "Admin Password")
         file = open('TXT\\admin_username_password.txt', "r")
@@ -244,9 +261,11 @@ class Users(object):
             return True
 
     '''Creates a new admin account.'''
+
     def make_admin(self):
         if self.check_if_admin():
-            r = double_input("Enter New Admin Username", "Enter New Admin Password")
+            r = double_input("Enter New Admin Username",
+                             "Enter New Admin Password")
             file = open('TXT\\admin_username_password.txt', "a")
             file.write('\n' + r)
             file.close()
@@ -259,19 +278,21 @@ class Users(object):
 def set_topmost():
     try:
         hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
-        SetWindowPos(hwnd, HWND_TOPMOST, -7, 750, 407, 300, 0)
+        SetWindowPos(hwnd, HWND_TOPMOST, -7, 748, 407, 300, 0)
     except Exception as e:
         pass
+
 
 def unset_topmost():
     try:
         hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
-        SetWindowPos(hwnd, HWND_NOTOPMOST, -7, 750, 407, 300, 0)
+        SetWindowPos(hwnd, HWND_NOTOPMOST, -7, 748, 407, 300, 0)
     except Exception as e:
         pass
     bclick(60, 763)
     sleep(0.3)
     bclick(1300, 0)
+
 
 def progress_bar(text, average_time):
     global dont_move
@@ -282,7 +303,8 @@ def progress_bar(text, average_time):
     print(text)
     while progress <= 100:
         dont_move = True
-        bar = "[" + "=" * int(progress / (100 / (bar_width))) + " " * (bar_width - int(progress / (100 / (bar_width)))) + "]"
+        bar = "[" + "=" * int(progress / (100 / (bar_width))) + " " * \
+            (bar_width - int(progress / (100 / (bar_width)))) + "]"
         print(f"\r{bar} {progress}%", end="", flush=True)
         progress += 1
         elapsed_time = time() - start_time
@@ -292,41 +314,49 @@ def progress_bar(text, average_time):
             sleep(sleep_time)
     dont_move = False
 
+
 def get_average_time(filename):
     with open(filename, "r") as f:
         file_content = f.read().strip()
         if path.getsize(filename) == 0:
-            return  
+            return
         else:
             return float(file_content)
 
 
 '''Opens MagicART and all the necessary templates.'''
+
+
 @commands_on_off
 @timing_decorator
 def open_MagicArt():
-    set_topmost()
-    filename = "TXT\\average_open_MagicArt.txt"
-    Thread(target=progress_bar, args=("Opening MagicArt...\nDO NOT MOVE THE MOUSE", get_average_time(filename))).start()
+    print("Opening MagicART...\nDO NOT MOVE THE MOUSE")
+    loading = Thread(target=loading_bar, args=(
+        "DO NOT MOVE MOUSE\n\nOpening MagicArt",), kwargs={"Lfg": "red"})
+    loading.start()
 
-    moveTo(1300, 1079) 
-    startfile(r"C:\Program Files (x86)\MagicART 5\MagicART.exe") 
-    found_pin = search_and_click("PNG\\object property pin.png", timeout=6, region=(164, 46, 380, 213)) 
+    moveTo(1300, 1079)
+    startfile(r"C:\Program Files (x86)\MagicART 5\MagicART.exe")
+    found_pin = search_and_click(
+        "PNG\\object property pin.png", timeout=6, region=(164, 46, 380, 213))
     if not found_pin:
-        click_if_exists("PNG\\open magicart.png", region=(827, 971, 1005, 1079)) or click_if_exists("PNG\\highlighted open magicart.png", region=(827, 971, 1005, 1079)) 
-        search_and_click("PNG\\object property pin.png", region=(164, 46, 380, 213)) 
-        click_if_exists("PNG\\fullscreen.png") 
+        click_if_exists("PNG\\open magicart.png", region=(827, 971, 1005, 1079)) or click_if_exists(
+            "PNG\\highlighted open magicart.png", region=(827, 971, 1005, 1079))
+        search_and_click("PNG\\object property pin.png",
+                         region=(164, 46, 380, 213))
+        click_if_exists("PNG\\fullscreen.png")
     found_connected = find("PNG\\engraver connected.png", timeout=3, region=(1717, 62, 1916, 242)) or find(
-        "PNG\\engraver connected 2.png", region=(1717, 62, 1916, 242)) 
+        "PNG\\engraver connected 2.png", region=(1717, 62, 1916, 242))
     if not found_connected:
         call("taskkill /f /im MagicART.exe")
-        r = buttons("Engraver not connected! \n Try again?", button_options=["Yes", "No"])
+        r = buttons("Engraver not connected! \n Try again?",
+                    button_options=["Yes", "No"])
         if r == "Yes":
             open_MagicArt()
         if r == "No":
             return None
-    for i in template_list: 
-        copy(i) 
+    for i in template_list:
+        copy(i)
         hotkey("ctrl", "o")
         sleep(0.5)
         hotkey("ctrl", "v")
@@ -341,35 +371,19 @@ def open_MagicArt():
                         region=(332, 927, 519, 1028))
         click_if_exists("PNG\\15%.png", region=(371, 802, 524, 998))
     click_if_exists("PNG\\object property pin.png", region=(164, 46, 380, 213))
-
-    unset_topmost()
-
-
-def loading_bar():
-    global loading_permissions
-    loading_permissions = True
-    print("               ", end = "", flush=True)
-    while loading_permissions:
-        for l in loading_list:
-            print(f"\rLoading{l}", end="", flush=True)
-            sleep(0.4)
-
-def loading_bar_done():
-    global loading_permissions
-    loading_permissions = False
-    sleep(0.1)
-    for d in done_list:
-        print(f"\r{d}", end="", flush=True)
-        sleep(0.2)
+    loading_bar_done()
+    loading.join()
 
 
 '''Opens Spotify and connects to Joe's Airpods.'''
+
+
 @commands_on_off
 @admin_commands
 def open_Spotify():
-    global dont_move
-    set_topmost()
-    Thread(target=loading_bar).start()
+    loading = Thread(target=loading_bar, args=(
+        "DO NOT MOVE MOUSE\n\nOpening Spotify",), kwargs={"Lfg": "red"})
+    loading.start()
 
     startfile(r"C:\Users\rcherveny\AppData\Roaming\Spotify\Spotify.exe")
     click_if_exists("PNG\\Bluetooth.png", region=(1657, 980, 1846, 1079))
@@ -378,7 +392,7 @@ def open_Spotify():
                     region=(1684, 856, 1904, 1044))
     sleep(1.5)
 
-    connected = found('PNG\\Bluetooth connected.png', region=(694, 6, 1878, 921)) or found(
+    connected = find('PNG\\Bluetooth connected.png', region=(694, 6, 1878, 921)) or find(
         'PNG\\Bluetooth connected 2.png', region=(694, 6, 1878, 921))
     if not connected:
         r = buttons("No devices connected. Try connecting?",
@@ -398,26 +412,28 @@ def open_Spotify():
                     click_if_exists('PNG\\exit bluetooth.png',
                                     region=(694, 6, 1878, 921))
                     loading_bar_done()
-                    unset_topmost()
+                    loading.join()
                     return None
             if time() > timeout_start + timeout:
                 message("Sorry, I couldn't connect any devices...")
                 loading_bar_done()
-                unset_topmost()
+                loading.join()
                 return None
         if r == 'No':
             message("No devices connected")
             loading_bar_done()
-            unset_topmost()
+            loading.join()
     if connected:
         message("Bluetooth Connected")
         click_if_exists('PNG\\exit bluetooth.png',
                         region=(1724, 0, 1886, 86))
         loading_bar_done()
-        unset_topmost()
+        loading.join()
 
 
 '''Checks if the user is an admin and alerts them if they are not.'''
+
+
 def admin_login():
     global admin
     chadmin = Users().check_if_admin()
@@ -426,13 +442,15 @@ def admin_login():
         message("Login Successful")
     else:
         message("Login Failed")
-        
+
 
 def change_username_password():
-    r = double_input("Please enter your current username and password.\n\nUsername", "Password")
+    r = double_input(
+        "Please enter your current username and password.\n\nUsername", "Password")
     if r == None:
         user_settings()
-    n = double_input("Please enter your new username and password.\n(Note: these credentials will need to be\nelevated to gain admin privileges)\n\nNew Username", "New Password")
+    n = double_input(
+        "Please enter your new username and password.\n(Note: these credentials will need to be\nelevated to gain admin privileges)\n\nNew Username", "New Password")
     if n == None:
         user_settings()
     with open("TXT\\username_password.txt", "r") as file1, open("TXT\\admin_username_password.txt", "r") as file2:
@@ -449,6 +467,8 @@ def change_username_password():
 
 
 '''Gives multiple functions that deal with user accounts and privileges.'''
+
+
 @commands_on_off
 def user_settings():
     selection = buttons('', 'User Settings', button_options=[
@@ -464,8 +484,11 @@ def user_settings():
 
 
 '''Gives access to the Engraving Guide and the BB5-S User Manual.'''
+
+
 def engraving_documents():
-    selection = buttons('', 'Engraving Documents', button_options=['Engraving Guide', 'BB-5S Manual'])
+    selection = buttons('', 'Engraving Documents', button_options=[
+                        'Engraving Guide', 'BB-5S Manual'])
     selection_to_function = {
         'Engraving Guide': lambda: startfile(r'C:\Users\rcherveny\Documents\Code\MagicART-Hotkeys\PDF\Engraving Guide.pdf'),
         'BB-5S Manual': lambda: startfile(r'C:\Users\rcherveny\Documents\Code\MagicART-Hotkeys\PDF\magic-5s.pdf')
@@ -475,17 +498,19 @@ def engraving_documents():
 
 
 '''Opens a toolbar with common automated tasks.'''
+
+
 @commands_on_off
 def open_toolbar():
     try:
         selection = buttons('', 'Toolbar', button_options=[
-                            'Workday', 'ChatGPT', 'SKU Search', 'Engraving Documents', 'Spotify', 'Calculator', 'User Settings', 'Shutdown'])
+                            'Workday', 'ChatGPT', 'Spotify', 'SKU Search', 'Engraving Documents', 'Calculator', 'User Settings', 'Shutdown'])
         selection_to_function = {
             'Workday': lambda: webopen(f"https://www.myworkday.com/wday/authgwy/signetjewelers/login.htmld"),
             'ChatGPT': lambda: webopen(f"https://chat.openai.com/chat"),
+            'Spotify': open_Spotify,
             'SKU Search': lambda: startfile('sku_search.py'),
             'Engraving Documents': engraving_documents,
-            'Spotify': open_Spotify,
             'Calculator': lambda: system("calc"),
             'User Settings': user_settings,
             'Shutdown': shut_down_computer
@@ -499,20 +524,18 @@ def open_toolbar():
 
 
 '''Toggles the keyboard commands on and off.'''
+
+
 def toggle_keyboard_commands():
     global keyboard_command
-    enable_disable = 'DISABLE' if keyboard_command else 'ENABLE'
     on_off = 'OFF' if keyboard_command else 'ON'
-    r = buttons(f"Do you want to {enable_disable} Joe's Keyboard Commands?", button_options=[
-                'Yes', 'No'])
-    if r == 'Yes':
-        keyboard_command = not keyboard_command
-        message(f"Keyboard Commands {on_off}")
-    elif r == 'No':
-        message("Well then why did you click the button?")
+    keyboard_command = not keyboard_command
+    message(f"Keyboard Commands {on_off}")
 
 
 '''Terminates this program.'''
+
+
 @commands_on_off
 def end_program():
     r = buttons("Are you sure you want to end the program?", button_options=[
@@ -523,6 +546,8 @@ def end_program():
 
 
 '''Shuts down the computer.'''
+
+
 @commands_on_off
 def shut_down_computer():
     '''
@@ -555,8 +580,8 @@ bindings = [
     [["alt", "`"], None, toggle_keyboard_commands],
     [["control", "shift"], None, commands_on_off(
         lambda: bclick(400, 65))],  # horizontal allignment
-    [["control", "alt"], None, lambda: commands_on_off(
-        bclick(475, 65))],  # center allignment
+    [["control", "alt"], None, commands_on_off(
+        lambda: bclick(475, 65))],  # center allignment
 ]
 
 
@@ -568,5 +593,3 @@ while awake:
     sleep(60 * 5)
     print("\n" + random.choice(sleeplist) + "\n")
     hotkey("F15")
-
-
