@@ -295,36 +295,6 @@ def unset_topmost():
     bclick(1300, 0)
 
 
-def progress_bar(text, average_time):
-    global dont_move
-    start_time = time()
-    progress = 0
-    term_width, _ = get_terminal_size(fallback=(80, 24))
-    bar_width = term_width - len(f"[ 100% ] ")
-    print(text)
-    while progress <= 100:
-        dont_move = True
-        bar = "[" + "=" * int(progress / (100 / (bar_width))) + " " * \
-            (bar_width - int(progress / (100 / (bar_width)))) + "]"
-        print(f"\r{bar} {progress}%", end="", flush=True)
-        progress += 1
-        elapsed_time = time() - start_time
-        remaining_time = average_time - elapsed_time
-        if remaining_time > 0 and progress < 100:
-            sleep_time = remaining_time / (100 - progress)
-            sleep(sleep_time)
-    dont_move = False
-
-
-def get_average_time(filename):
-    with open(filename, "r") as f:
-        file_content = f.read().strip()
-        if path.getsize(filename) == 0:
-            return
-        else:
-            return float(file_content)
-
-
 '''Opens MagicART and all the necessary templates.'''
 
 
@@ -345,7 +315,7 @@ def open_MagicArt():
             "PNG\\highlighted open magicart.png", region=(827, 971, 1005, 1079))
         search_and_click("PNG\\object property pin.png",
                          region=(164, 46, 380, 213))
-        click_if_exists("PNG\\fullscreen.png")
+        search_and_click("PNG\\fullscreen.png")
     found_connected = find("PNG\\engraver connected.png", timeout=3, region=(1717, 62, 1916, 242)) or find(
         "PNG\\engraver connected 2.png", region=(1717, 62, 1916, 242))
     if not found_connected:
@@ -505,14 +475,15 @@ def engraving_documents():
 def open_toolbar():
     try:
         selection = buttons('', 'Toolbar', button_options=[
-                            'Workday', 'ChatGPT', 'Spotify', 'SKU Search', 'Engraving Documents', 'Calculator', 'User Settings', 'Shutdown'])
+                            'Workday', 'Spotify', 'Calculator', 'VS Code', 'ChatGPT', 'SKU Search', 'Engraving Documents', 'User Settings', 'Shutdown'])
         selection_to_function = {
             'Workday': lambda: webopen(f"https://www.myworkday.com/wday/authgwy/signetjewelers/login.htmld"),
-            'ChatGPT': lambda: webopen(f"https://chat.openai.com/chat"),
             'Spotify': open_Spotify,
+            'Calculator': lambda: system("calc"),
+            'VS Code': lambda: startfile(r'C:\Users\rcherveny\AppData\Local\Programs\Microsoft VS Code\Code.exe'),
+            'ChatGPT': lambda: webopen(f"https://chat.openai.com/chat"),
             'SKU Search': lambda: startfile('sku_search.py'),
             'Engraving Documents': engraving_documents,
-            'Calculator': lambda: system("calc"),
             'User Settings': user_settings,
             'Shutdown': shut_down_computer
         }
@@ -573,7 +544,7 @@ bindings = [
     [["F5"], None, commands_on_off(lambda: bclick(720, 95))],
     [["F6"], None, open_toolbar],
     [["F7"], None, commands_on_off(lambda: message(
-        " F2: Go to 925 template \n F3: Go to 10K template \n F4: Go to 14K template \n F5: Go to Logos template \n F6: Open Toolbar \n F7: Hotkeys List \n F11: Close MagicART \n F12: Open MagicART \n Alt + `: Toggle Keyboard Commands \n Ctrl + Shift: Horizontal Allignment \n Ctrl + Alt: Center Allignment", "Hotkeys"))],
+        " F2: Go to 925 template\nF3: Go to 10K template\nF4: Go to 14K template\nF5: Go to Logos template\nF6: Open Toolbar\nF7: Hotkeys List\nF11: Close MagicART\nF12: Open MagicART\nAlt + `: Toggle Keyboard Commands\nCtrl + Shift: Horizontal Allignment\nCtrl + Alt: Center Allignment", "Hotkeys"))],
     [["F10"], None, end_program],
     [["F11"], None, commands_on_off(lambda: call(
         ["taskkill", "/F", "/IM", "MagicART.exe"]))],
