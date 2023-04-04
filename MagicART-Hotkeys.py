@@ -1,7 +1,6 @@
 # Imports:
 import random
 from threading import Thread, Event
-from shutil import get_terminal_size
 from time import sleep, time
 from os import startfile, system, path
 from webbrowser import open as webopen
@@ -351,12 +350,11 @@ def open_MagicArt():
 
 @commands_on_off
 @admin_commands
-def open_Spotify():
+def connect_headphones():
     loading = Thread(target=loading_bar, args=(
-        "DO NOT MOVE MOUSE\n\nOpening Spotify",), kwargs={"Lfg": "red"})
+        "DO NOT MOVE MOUSE\n\nConnecting Headphones",), kwargs={"Lfg": "red"})
     loading.start()
 
-    startfile(r"C:\Users\rcherveny\AppData\Roaming\Spotify\Spotify.exe")
     click_if_exists("PNG\\Bluetooth.png", region=(1657, 980, 1846, 1079))
     sleep(0.5)
     click_if_exists("PNG\\Show Bluetooth devices.png",
@@ -475,10 +473,10 @@ def engraving_documents():
 def open_toolbar():
     try:
         selection = buttons('', 'Toolbar', button_options=[
-                            'Workday', 'Spotify', 'Calculator', 'VS Code', 'ChatGPT', 'SKU Search', 'Engraving Documents', 'User Settings', 'Shutdown'])
+                            'Workday', 'Connect Headphones', 'Calculator', 'VS Code', 'ChatGPT', 'SKU Search', 'Engraving Documents', 'User Settings', 'Shutdown'])
         selection_to_function = {
             'Workday': lambda: webopen(f"https://www.myworkday.com/wday/authgwy/signetjewelers/login.htmld"),
-            'Spotify': open_Spotify,
+            'Connect Headphones': connect_headphones,
             'Calculator': lambda: system("calc"),
             'VS Code': lambda: startfile(r'C:\Users\rcherveny\AppData\Local\Programs\Microsoft VS Code\Code.exe'),
             'ChatGPT': lambda: webopen(f"https://chat.openai.com/chat"),
