@@ -300,9 +300,8 @@ def unset_topmost():
 @commands_on_off
 @timing_decorator
 def open_MagicArt():
-    print("Opening MagicART...\nDO NOT MOVE THE MOUSE")
     loading = Thread(target=loading_bar, args=(
-        "DO NOT MOVE MOUSE\n\nOpening MagicArt",), kwargs={"Lfg": "red"})
+        "DO NOT MOVE MOUSE\n\n",), kwargs={"Lfg": "red"})
     loading.start()
 
     moveTo(1300, 1079)
@@ -352,7 +351,7 @@ def open_MagicArt():
 @admin_commands
 def connect_headphones():
     loading = Thread(target=loading_bar, args=(
-        "DO NOT MOVE MOUSE\n\nConnecting Headphones",), kwargs={"Lfg": "red"})
+        "DO NOT MOVE MOUSE\n\n",), kwargs={"Lfg": "red"})
     loading.start()
 
     click_if_exists("PNG\\Bluetooth.png", region=(1657, 980, 1846, 1079))
