@@ -182,42 +182,6 @@ def admin_commands(input_function):
     return wrapper
 
 
-def timing_decorator(func):
-    def wrapper(*args, **kwargs):
-        global dont_move
-        start_time = time()
-        result = func(*args, **kwargs)
-        end_time = time()
-        elapsed_time = end_time - start_time
-        with open(f"TXT\\{func.__name__}.txt", "a") as f:
-            t = (f"{elapsed_time: .4f}")
-            f.write(t + "\n")
-        with open(f"TXT\\{func.__name__}.txt", "r") as f:
-            numbers = []
-            for line in f:
-                try:
-                    number = float(line.strip())
-                    numbers.append(number)
-                except ValueError:
-                    pass
-            while dont_move:
-                sleep(0.1)
-            if not dont_move:
-                try:
-                    average = sum(numbers) / len(numbers)
-                    print(
-                        f"\n{func.__name__} took {elapsed_time:.4f} sec to complete.")
-                    print(
-                        f"The average time for {func.__name__} is:{average}\n")
-                except ZeroDivisionError as z:
-                    pass
-        with open(f"TXT\\average_{func.__name__}.txt", "w") as f:
-            average = str(average)
-            f.write(average)
-        return result
-    return wrapper
-
-
 # Classes:
 '''Gives multiple functions that deal with user accounts and privileges.'''
 
@@ -298,10 +262,8 @@ def unset_topmost():
 
 
 @commands_on_off
-@timing_decorator
 def open_MagicArt():
-    loading = Thread(target=loading_bar, args=(
-        "DO NOT MOVE MOUSE\n\n",), kwargs={"Lfg": "red"})
+    loading = Thread(target=loading_bar, kwargs={'text': 'Opening MagicART', 'xscale': 0.17, 'yscale': 0.17})
     loading.start()
 
     moveTo(1300, 1079)
@@ -309,8 +271,8 @@ def open_MagicArt():
     found_pin = search_and_click(
         "PNG\\object property pin.png", timeout=6, region=(164, 46, 380, 213))
     if not found_pin:
-        click_if_exists("PNG\\open magicart.png", region=(827, 971, 1005, 1079)) or click_if_exists(
-            "PNG\\highlighted open magicart.png", region=(827, 971, 1005, 1079))
+        click_if_exists("PNG\\open magicart.png", region=(827, 971, 1005, 1079), confidence=0.65) or click_if_exists(
+            "PNG\\highlighted open magicart.png", region=(827, 971, 1005, 1079), confidence=0.65)
         search_and_click("PNG\\object property pin.png",
                          region=(164, 46, 380, 213))
         search_and_click("PNG\\fullscreen.png")
@@ -323,6 +285,8 @@ def open_MagicArt():
         if r == "Yes":
             open_MagicArt()
         if r == "No":
+            loading_bar_done()
+            loading.join()
             return None
     for i in template_list:
         copy(i)
@@ -339,7 +303,6 @@ def open_MagicArt():
         click_if_exists("PNG\\fit to page.png",
                         region=(332, 927, 519, 1028))
         click_if_exists("PNG\\15%.png", region=(371, 802, 524, 998))
-    click_if_exists("PNG\\object property pin.png", region=(164, 46, 380, 213))
     loading_bar_done()
     loading.join()
 
@@ -350,8 +313,7 @@ def open_MagicArt():
 @commands_on_off
 @admin_commands
 def connect_headphones():
-    loading = Thread(target=loading_bar, args=(
-        "DO NOT MOVE MOUSE\n\n",), kwargs={"Lfg": "red"})
+    loading = Thread(target=loading_bar, kwargs={'text':"Connecting Headphones", 'xpos':-100, 'xscale':0.17, 'yscale':0.17})
     loading.start()
 
     click_if_exists("PNG\\Bluetooth.png", region=(1657, 980, 1846, 1079))
