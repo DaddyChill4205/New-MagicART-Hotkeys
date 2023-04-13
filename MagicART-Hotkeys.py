@@ -28,8 +28,7 @@ is_alive = True
 awake = True
 keyboard_command = True
 admin = False
-progress = 0
-dont_move = False
+safe_cancel = False
 
 # Login:
 '''Asks the user to login. If the user does not have an account, it asks the user if they would like to create one. 
@@ -182,6 +181,16 @@ def admin_commands(input_function):
     return wrapper
 
 
+def check_magicart(input_function):
+    def wrapper():
+        f = find("PNG\\engraver connected.png", timeout=0.1, region=(1717, 62, 1916, 242)) or find(
+        "PNG\\engraver connected 2.png", timeout=0.1, region=(1717, 62, 1916, 242))
+        if f:
+            input_function()
+        if not f:
+            pass
+    return wrapper
+
 # Classes:
 '''Gives multiple functions that deal with user accounts and privileges.'''
 
@@ -265,7 +274,6 @@ def unset_topmost():
 def open_MagicArt():
     loading = Thread(target=loading_bar, kwargs={'text': 'Opening MagicART', 'xscale': 0.17, 'yscale': 0.17})
     loading.start()
-
     moveTo(1300, 1079)
     startfile(r"C:\Program Files (x86)\MagicART 5\MagicART.exe")
     found_pin = search_and_click(
@@ -274,7 +282,7 @@ def open_MagicArt():
         click_if_exists("PNG\\open magicart.png", region=(827, 971, 1005, 1079), confidence=0.65) or click_if_exists(
             "PNG\\highlighted open magicart.png", region=(827, 971, 1005, 1079), confidence=0.65)
         search_and_click("PNG\\object property pin.png",
-                         region=(164, 46, 380, 213))
+                        region=(164, 46, 380, 213))
         search_and_click("PNG\\fullscreen.png")
     found_connected = find("PNG\\engraver connected.png", timeout=3, region=(1717, 62, 1916, 242)) or find(
         "PNG\\engraver connected 2.png", region=(1717, 62, 1916, 242))
@@ -430,7 +438,6 @@ def engraving_documents():
 '''Opens a toolbar with common automated tasks.'''
 
 
-@commands_on_off
 def open_toolbar():
     try:
         selection = buttons('', 'Toolbar', button_options=[
@@ -463,6 +470,11 @@ def toggle_keyboard_commands():
     keyboard_command = not keyboard_command
     message(f"Keyboard Commands {on_off}")
 
+def safe_canceling():
+    global safe_cancel
+    safe_cancel = True
+    print("Safely Canceld")
+
 
 '''Terminates this program.'''
 
@@ -494,13 +506,13 @@ def shut_down_computer():
 # Key Bindings for Commands:
 bindings = [
     # go to 925 template
-    [["F2"], None, commands_on_off(lambda: bclick(240, 95))],
+    [["F2"], None, check_magicart(lambda: bclick(240, 95))],
     # go to 10K template
-    [["F3"], None, commands_on_off(lambda: bclick(400, 95))],
+    [["F3"], None, check_magicart(lambda: bclick(400, 95))],
     # go to 14K template
-    [["F4"], None, commands_on_off(lambda: bclick(565, 95))],
+    [["F4"], None, check_magicart(lambda: bclick(565, 95))],
     # go to Logos template
-    [["F5"], None, commands_on_off(lambda: bclick(720, 95))],
+    [["F5"], None, check_magicart(lambda: bclick(720, 95))],
     [["F6"], None, open_toolbar],
     [["F7"], None, commands_on_off(lambda: message(
         " F2: Go to 925 template\nF3: Go to 10K template\nF4: Go to 14K template\nF5: Go to Logos template\nF6: Open Toolbar\nF7: Hotkeys List\nF11: Close MagicART\nF12: Open MagicART\nAlt + `: Toggle Keyboard Commands\nCtrl + Shift: Horizontal Allignment\nCtrl + Alt: Center Allignment", "Hotkeys"))],
@@ -509,9 +521,9 @@ bindings = [
         ["taskkill", "/F", "/IM", "MagicART.exe"]))],
     [["F12"], None, open_MagicArt],
     [["alt", "`"], None, toggle_keyboard_commands],
-    [["control", "shift"], None, commands_on_off(
+    [["control", "shift"], None, check_magicart(
         lambda: bclick(400, 65))],  # horizontal allignment
-    [["control", "alt"], None, commands_on_off(
+    [["control", "alt"], None, check_magicart(
         lambda: bclick(475, 65))],  # center allignment
 ]
 
