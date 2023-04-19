@@ -6,13 +6,14 @@ from os import startfile, system, path
 from webbrowser import open as webopen
 from global_hotkeys import register_hotkeys, start_checking_hotkeys
 from bot import click_if_exists, search_and_click, found, find, bclick
+from input_boxes import message, buttons, double_input, loading_bar, loading_bar_done
 from pyautogui import hotkey, moveTo
 from pyperclip import copy
 from subprocess import call
-from input_boxes import message, buttons, double_input, loading_bar, loading_bar_done
 from win32gui import MoveWindow, FindWindow, SetWindowPos
 from win32con import HWND_TOPMOST, HWND_NOTOPMOST
 from tendo.singleton import SingleInstance
+from subprocess import call
 
 # Startup Process:
 '''Checks to make sure there is only one instance of the program. Then, resizes the window, and moves it to the bottom left corner.'''
@@ -447,7 +448,7 @@ def open_toolbar():
             'Connect Headphones': connect_headphones,
             'Calculator': lambda: system("calc"),
             'VS Code': lambda: startfile(r'C:\Users\rcherveny\AppData\Local\Programs\Microsoft VS Code\Code.exe'),
-            'ChatGPT': lambda: webopen(f"https://chat.openai.com/chat"),
+            'ChatGPT': lambda: call("open", f"https://chat.openai.com/chat"),
             'SKU Search': lambda: startfile('sku_search.py'),
             'Engraving Documents': engraving_documents,
             'User Settings': user_settings,
