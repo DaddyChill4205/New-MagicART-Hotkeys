@@ -1,9 +1,8 @@
 # Imports:
 import random
-from threading import Thread, Event
+from threading import Thread
 from time import sleep, time
 from os import startfile, system, path
-from webbrowser import open as webopen
 from global_hotkeys import register_hotkeys, start_checking_hotkeys
 from bot import click_if_exists, search_and_click, found, find, bclick
 from input_boxes import message, buttons, double_input, loading_bar, loading_bar_done
@@ -13,7 +12,6 @@ from subprocess import call
 from win32gui import MoveWindow, FindWindow, SetWindowPos
 from win32con import HWND_TOPMOST, HWND_NOTOPMOST
 from tendo.singleton import SingleInstance
-from subprocess import call
 
 # Startup Process:
 '''Checks to make sure there is only one instance of the program. Then, resizes the window, and moves it to the bottom left corner.'''
@@ -273,7 +271,7 @@ def unset_topmost():
 
 @commands_on_off
 def open_MagicArt():
-    loading = Thread(target=loading_bar, kwargs={'text': 'Opening MagicART', 'xscale': 0.17, 'yscale': 0.17})
+    loading = Thread(target=loading_bar, kwargs={'text': 'Opening MagicART', 'gif_path':'GIF\\loading wheel.gif', 'xscale': 0.17, 'yscale': 0.17})
     loading.start()
     moveTo(1300, 1079)
     startfile(r"C:\Program Files (x86)\MagicART 5\MagicART.exe")
@@ -322,7 +320,7 @@ def open_MagicArt():
 @commands_on_off
 @admin_commands
 def connect_headphones():
-    loading = Thread(target=loading_bar, kwargs={'text':"Connecting Headphones", 'xpos':-100, 'xscale':0.17, 'yscale':0.17})
+    loading = Thread(target=loading_bar, kwargs={'text':"Connecting Headphones", 'gif_path':'GIF\\loading wheel.gif', 'xpos':-100, 'xscale':0.17, 'yscale':0.17})
     loading.start()
 
     click_if_exists("PNG\\Bluetooth.png", region=(1657, 980, 1846, 1079))
@@ -364,8 +362,7 @@ def connect_headphones():
             loading.join()
     if connected:
         message("Bluetooth Connected")
-        click_if_exists('PNG\\exit bluetooth.png',
-                        region=(1724, 0, 1886, 86))
+        call(["taskkill", "/F", "/IM", "SystemSettings.exe"])
         loading_bar_done()
         loading.join()
 
@@ -421,19 +418,9 @@ def user_settings():
     if selection in selection_to_function:
         selection_to_function[selection]()
 
-
-'''Gives access to the Engraving Guide and the BB5-S User Manual.'''
-
-
-def engraving_documents():
-    selection = buttons('', 'Engraving Documents', button_options=[
-                        'Engraving Guide', 'BB-5S Manual'])
-    selection_to_function = {
-        'Engraving Guide': lambda: startfile(r'C:\Users\rcherveny\Documents\Code\MagicART-Hotkeys\PDF\Engraving Guide.pdf'),
-        'BB-5S Manual': lambda: startfile(r'C:\Users\rcherveny\Documents\Code\MagicART-Hotkeys\PDF\magic-5s.pdf')
-    }
-    if selection in selection_to_function:
-        selection_to_function[selection]()
+def open_spotify_and_headphones():
+    startfile(r"C:\Users\rcherveny\AppData\Roaming\Spotify\Spotify.exe")
+    connect_headphones()
 
 
 '''Opens a toolbar with common automated tasks.'''
@@ -442,15 +429,11 @@ def engraving_documents():
 def open_toolbar():
     try:
         selection = buttons('', 'Toolbar', button_options=[
-                            'Workday', 'Connect Headphones', 'Calculator', 'VS Code', 'ChatGPT', 'SKU Search', 'Engraving Documents', 'User Settings', 'Shutdown'])
+                            'Connect Headphones', 'Calculator', 'Spotify + Headphones', 'User Settings', 'Shutdown'])
         selection_to_function = {
-            'Workday': lambda: webopen(f"https://www.myworkday.com/wday/authgwy/signetjewelers/login.htmld"),
             'Connect Headphones': connect_headphones,
             'Calculator': lambda: system("calc"),
-            'VS Code': lambda: startfile(r'C:\Users\rcherveny\AppData\Local\Programs\Microsoft VS Code\Code.exe'),
-            'ChatGPT': lambda: call("open", f"https://chat.openai.com/chat"),
-            'SKU Search': lambda: startfile('sku_search.py'),
-            'Engraving Documents': engraving_documents,
+            'Spotify + Headphones': open_spotify_and_headphones,
             'User Settings': user_settings,
             'Shutdown': shut_down_computer
         }
