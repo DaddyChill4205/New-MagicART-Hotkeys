@@ -9,8 +9,7 @@ from input_boxes import message, buttons, double_input, loading_bar, loading_bar
 from pyautogui import hotkey, moveTo
 from pyperclip import copy
 from subprocess import call
-from win32gui import MoveWindow, FindWindow, SetWindowPos
-from win32con import HWND_TOPMOST, HWND_NOTOPMOST
+from win32gui import MoveWindow, FindWindow
 from tendo.singleton import SingleInstance
 
 # Startup Process:
@@ -23,11 +22,9 @@ except Exception as e:
     pass
 
 # Global Variables:
-is_alive = True
 awake = True
 keyboard_command = True
 admin = False
-safe_cancel = False
 
 # Login:
 '''Asks the user to login. If the user does not have an account, it asks the user if they would like to create one. 
@@ -247,28 +244,7 @@ class Users(object):
 
 # Functions:
 
-def set_topmost():
-    try:
-        hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
-        SetWindowPos(hwnd, HWND_TOPMOST, -7, 748, 407, 300, 0)
-    except Exception as e:
-        pass
-
-
-def unset_topmost():
-    try:
-        hwnd = FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
-        SetWindowPos(hwnd, HWND_NOTOPMOST, -7, 748, 407, 300, 0)
-    except Exception as e:
-        pass
-    bclick(60, 763)
-    sleep(0.3)
-    bclick(1300, 0)
-
-
 '''Opens MagicART and all the necessary templates.'''
-
-
 @commands_on_off
 def open_MagicArt():
     loading = Thread(target=loading_bar, kwargs={'text': 'Opening MagicART', 'gif_path':'GIF\\loading wheel.gif', 'xscale': 0.17, 'yscale': 0.17})
@@ -418,10 +394,6 @@ def user_settings():
     if selection in selection_to_function:
         selection_to_function[selection]()
 
-def open_spotify_and_headphones():
-    startfile(r"C:\Users\rcherveny\AppData\Roaming\Spotify\Spotify.exe")
-    connect_headphones()
-
 
 '''Opens a toolbar with common automated tasks.'''
 
@@ -429,11 +401,10 @@ def open_spotify_and_headphones():
 def open_toolbar():
     try:
         selection = buttons('', 'Toolbar', button_options=[
-                            'Connect Headphones', 'Calculator', 'Spotify + Headphones', 'User Settings', 'Shutdown'])
+                            'Connect Headphones', 'Calculator', 'User Settings', 'Shutdown'])
         selection_to_function = {
             'Connect Headphones': connect_headphones,
             'Calculator': lambda: system("calc"),
-            'Spotify + Headphones': open_spotify_and_headphones,
             'User Settings': user_settings,
             'Shutdown': shut_down_computer
         }
@@ -444,7 +415,6 @@ def open_toolbar():
     except AttributeError as a:
         pass
 
-
 '''Toggles the keyboard commands on and off.'''
 
 
@@ -454,22 +424,26 @@ def toggle_keyboard_commands():
     keyboard_command = not keyboard_command
     message(f"Keyboard Commands {on_off}")
 
-def safe_canceling():
-    global safe_cancel
-    safe_cancel = True
-    print("Safely Canceld")
-
 
 '''Terminates this program.'''
 
 
 @commands_on_off
 def end_program():
+    
     r = buttons("Are you sure you want to end the program?", button_options=[
                 'Yes', 'No'])
     if r == 'Yes':
+        import win32gui
+        import win32process
+        hwnd = win32gui.FindWindow(None, "MagicART-Hotkeys.py - Shortcut")
+        if hwnd == 0:
+            return None
+        else:
+            _, pid = win32process.GetWindowThreadProcessId(hwnd)
+
         # end the program
-        call(["taskkill", "/F", "/IM", "python.exe"])
+        call(["taskkill", "/F", "/PID", str(pid)])
 
 
 '''Shuts down the computer.'''
