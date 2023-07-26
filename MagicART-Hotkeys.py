@@ -251,6 +251,7 @@ def open_MagicArt():
     loading.start()
     moveTo(1300, 1079)
     startfile(r"C:\Program Files (x86)\MagicART 5\MagicART.exe")
+    search_and_click("PNG\\fullscreen.png")
     found_pin = search_and_click(
         "PNG\\object property pin.png", timeout=6, region=(164, 46, 380, 213))
     if not found_pin:
@@ -401,10 +402,10 @@ def user_settings():
 def open_toolbar():
     try:
         selection = buttons('', 'Toolbar', button_options=[
-                            'Connect Headphones', 'Calculator', 'User Settings', 'Shutdown'])
+                            'Calculator', 'Connect Headphones',  'User Settings', 'Shutdown'])
         selection_to_function = {
-            'Connect Headphones': connect_headphones,
             'Calculator': lambda: system("calc"),
+            'Connect Headphones': connect_headphones,
             'User Settings': user_settings,
             'Shutdown': shut_down_computer
         }
