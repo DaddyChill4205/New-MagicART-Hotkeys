@@ -402,10 +402,8 @@ def user_settings():
 def open_toolbar():
     try:
         selection = buttons('', 'Toolbar', button_options=[
-                            'Calculator', 'Connect Headphones',  'User Settings', 'Shutdown'])
+                            'User Settings', 'Shutdown'])
         selection_to_function = {
-            'Calculator': lambda: system("calc"),
-            'Connect Headphones': connect_headphones,
             'User Settings': user_settings,
             'Shutdown': shut_down_computer
         }
